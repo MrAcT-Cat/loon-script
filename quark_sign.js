@@ -1,7 +1,9 @@
 let cookie = $persistentStore.read("quark_cookie");
+let url = $persistentStore.read("quark_url");
+let body = $persistentStore.read("quark_body") || "{}";
 
-if (!cookie) {
-  $notification.post("夸克签到", "失败", "没有Cookie");
+if (!cookie || !url) {
+  $notification.post("夸克签到", "失败", "缺少数据");
   $done();
 }
 
@@ -10,11 +12,6 @@ let headers = {
   "Content-Type": "application/json",
   "Cookie": cookie
 };
-
-// ✅ 关键：加 body
-let body = "{}";
-
-let url = "https://scan-order.quark.cn/api/sd6hJds8SIgn/pOcKNmTupWelFare";
 
 $httpClient.post({ url, headers, body }, function (err, resp, data) {
   if (data) {
