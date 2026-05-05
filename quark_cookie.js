@@ -1,30 +1,17 @@
-// 夸克扫描王 抓包脚本（完整版）
-const scriptName = "夸克参数获取";
-const storeKey = "quark_sign_account_v1";
-
-function saveStore(obj) {
-  $persistentStore.write(JSON.stringify(obj), storeKey);
-}
-
-function notify(title, body) {
-  $notification.post(scriptName, title, body);
-}
+// 夸克抓包脚本（最终版）
+const key = "quark_sign_data";
 
 if ($request) {
-
-  const captureData = {
+  const data = {
     url: $request.url,
     headers: $request.headers,
-    body: $request.body || "",   // ✅ 关键：保存请求体
-    updatedAt: Date.now()
+    body: $request.body,   // ⭐关键：保存请求体
+    time: Date.now()
   };
 
-  saveStore(captureData);
+  $persistentStore.write(JSON.stringify(data), key);
 
-  notify("✅ 抓取成功", "签到参数 + 请求体已保存");
-
-  console.log("====== 抓包数据 ======");
-  console.log(JSON.stringify(captureData));
-
-  $done({});
+  $notification.post("夸克扫描王", "✅ 抓包成功", "参数已保存");
 }
+
+$done({});
