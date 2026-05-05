@@ -5,8 +5,8 @@ hostname = scan-order.quark.cn
 HOST-SUFFIX, scan-order.quark.cn, QuarkScan
 
 [Script]
-# 夸克Cookie自动抓取
-QuarkScan_CookieGrab = type=http-request, pattern=^https://scan-order\.quark\.cn/api/.*, script-path=https://你的仓库地址/loon-script/quark_cookie.js, requires-body=false, enable=true
+# 夸克扫描王 Cookie 自动抓取脚本
+QuarkScan_CookieGrab = type=http-request, pattern=^https://scan-order\.quark\.cn/api/.*, script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_cookie.js, requires-body=false, enable=true
 
-# 夸克每日定时签到（每天0点执行）
-QuarkScan每日签到 = type=cron, script-path=https://你的仓库地址/loon-script/quark_sign.js, cron=0 0 * * *, timeout=60, enable=true
+# 夸克扫描王 每日定时签到脚本（每天 0 点自动执行）
+QuarkScan每日签到 = type=cron, script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_sign.js, cron=0 0 * * *, timeout=60, enable=true
