@@ -5,7 +5,8 @@ function notify(title, body) {
   $notification.post(scriptName, title, body);
 }
 
-if ($request && $request.method == "POST" && $request.url.includes("uc_param_str=")) {
+// 只匹配签到接口，不匹配 memberInfo
+if ($request && $request.method == "POST" && $request.url.includes("/sd6hJds8SIgn/pOcKNmTupWelFare")) {
   let data = {
     url: $request.url,
     headers: $request.headers,
