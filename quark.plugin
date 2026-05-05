@@ -2,19 +2,23 @@
 #!desc = 夸克网盘每日签到，一键开关，可视化管理
 #!date = 2026-5-5
 #!author = MrAcT-Cat
+#!icon = https://raw.githubusercontent.com/axhani/icon/refs/heads/main/quark.png
 #!loon_version = 3.2.4(787)
 
-# 👇 这一段就是生成开关和输入框的关键，你之前没加上
 [Argument]
+# 1. 定时签到任务开关
 arg1 = switch,true,tag=夸克定时签到
-arg2 = input,"0 0 8,20 * * *",tag=签到定时
+# 2. Cookie/参数获取开关（进签到页抓包时需要打开）
+arg2 = switch,true,tag=夸克抓包获取
+# 3. 签到定时时间设置（可在UI里直接修改）
+arg3 = input,"0 0 8,20 * * *",tag=签到定时
 
 [Script]
-# 定时签到脚本（由arg1的开关控制）
-cron {arg2} script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_sign.js, timeout=600, enable={arg1}, tag=夸克定时签到
+# 定时签到脚本（由arg1开关控制）
+cron {arg3} script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_sign.js, timeout=600, enable={arg1}, tag=夸克定时签到
 
-# 抓Cookie脚本（必须开启，无开关控制）
-http-request ^https:\/\/scan-order\.quark\.cn\/api\/sd6hJds8SIgn\/pOcKNmTupWelFare script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_cookie.js, requires-body=true, timeout=10, tag=夸克抓包
+# Cookie/参数获取脚本（由arg2开关控制）
+http-request ^https:\/\/scan-order\.quark\.cn\/api\/sd6hJds8SIgn\/pOcKNmTupWelFare script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_cookie.js, requires-body=true, timeout=10, enable={arg2}, tag=夸克抓包获取
 
 [MITM]
 hostname = scan-order.quark.cn
