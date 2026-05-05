@@ -1,74 +1,76 @@
-// 夸克扫描王定时签到脚本
-const $ = new Env("夸克扫描王签到");
+// 夸克扫描王 Loon标准签到脚本 对标PingMe语法
+const scriptName = "夸克签到";
+const storeKey = "quark_sign_account_v1";
 
-// 读取抓包脚本保存的Cookie
-const COOKIE_KEY = "QuarkScan_FullCookie";
-const cookie = $.read(COOKIE_KEY);
-
-// 抓取的完整签到链接
-const FULL_URL = "https://scan-order.quark.cn/api/sd6hJds8SIgn/pOcKNmTupWelFare?uc_param_str=vesvutkpfrcgprospc&timestamp=177976371382&ve=10.4.0.2812&sv=app&ut=LuFw5fJHq%2b1UkEW%2fgiQ2uyJERq2m4Ne22FnUZUJ28Hbq7w%3d%3d&kp=LuHk%2fFzQlrif6ObX68djri3lvw2ilwn9cBIWZ%2bVDbqQWK4sYTP88gJrIHOf7xy37D%2bcMQaIX1bbHsb%2fFLB9GGvQFOQcImg4LvUO01dZHJUGySw%3d%3d&fr=iphone&cg=default&pr=scanking&os=18.1&pc=LuFcCwcrLULIODGxukLE8L175v0tWYYRqjpKV3tnBq%2b%2bGlzCbRfk7i2zUtRz0nD85fg%3d";
-
-// 固定UA
-const UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X; zh-cn) AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/22B83 Quark/10.4.0.2812 Scanking/10.4.0.2812 Mobile";
-
-if (!cookie) {
-    $.notify("❌ 签到失败", "Cookie未获取", "请打开夸克APP，开启抓包开关，进入签到页面抓包");
-    $.done();
+// 读取本地缓存账号参数
+function loadStore() {
+  const raw = $persistentStore.read(storeKey);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    return null;
+  }
 }
 
-$httpClient.post({
-    url: FULL_URL,
-    headers: {
-        "User-Agent": UA,
-        "Cookie": cookie,
-        "Content-Type": "application/json",
-        "Accept": "*/*",
-        "Origin": "https://scank.quark.cn",
-        "Referer": "https://scank.quark.cn/"
-    },
+// Loon系统通知
+function notify(title, body) {
+  $notification.post(scriptName, title, body);
+}
+
+// 拼接带动态时间戳请求链接
+function buildUrl(info) {
+  const baseUrl = info.url.split("?")[0];
+  const query = info.url.split("?")[1];
+  const timestamp = Date.now();
+  return `${baseUrl}?${query}&timestamp=${timestamp}`;
+}
+
+// 清洗请求头，适配Loon规范
+function getHeaders(info) {
+  const headers = {...info.headers};
+  delete headers[":method"];
+  delete headers[":path"];
+  delete headers[":scheme"];
+  delete headers["Content-Length"];
+  return headers;
+}
+
+// 核心签到逻辑
+async function doSign() {
+  const account = loadStore();
+  if (!account) {
+    notify("签到失败", "未抓取账号参数，请打开抓包开关进入夸克签到页");
+    return $done();
+  }
+
+  const url = buildUrl(account);
+  const headers = getHeaders(account);
+
+  $httpClient.post({
+    url: url,
+    headers: headers,
     body: JSON.stringify({})
-}, function(error, response, data) {
-    if (error) {
-        $.notify("❌ 签到失败", "请求错误", JSON.stringify(error));
-        $.done();
-        return;
+  }, (err, resp, data) => {
+    if (err) {
+      notify("签到请求异常", JSON.stringify(err));
+      return $done();
     }
-
     try {
-        const res = JSON.parse(data);
-        if (res.code === 0) {
-            const todaySign = res.data?.signWelfare?.find(item => item.signed === true);
-            const contDays = res.data?.contDays || 0;
-
-            if (todaySign) {
-                const reward = todaySign.welfareCoin > 0 ? `${todaySign.welfareCoin}积分` : todaySign.welfareName || "签到奖励";
-                $.notify("✅ 签到成功", `连续签到${contDays}天`, `获得奖励：${reward}`);
-            } else {
-                $.notify("⚠️ 今日已签到", "无需重复操作", `当前连续签到${contDays}天`);
-            }
-        } else {
-            $.notify("❌ 签到失败", `错误码：${res.code}`, res.msg || "参数校验失败，请重新抓包");
-        }
+      const res = JSON.parse(data);
+      if (res.code === 0) {
+        notify("签到成功", "夸克每日签到完成");
+      } else if (res.code === 1002) {
+        notify("签到失败 1002", "参数过期，重新打开抓包刷新参数");
+      } else {
+        notify("签到失败", res.msg || "未知错误");
+      }
     } catch (e) {
-        $.notify("❌ 签到失败", "解析错误", e.message);
+      notify("返回数据解析失败", e.message);
     }
-    $.done();
-});
-
-// Loon 兼容
-function Env(name) {
-    return new class {
-        constructor(name) {
-            this.name = name;
-        }
-        notify(title, subtitle, content) {
-            $notification.post(title, subtitle, content);
-        }
-        read(key) {
-            return $persistentStore.read(key);
-        }
-        done() {
-            $done({});
-        }
-    }(name);
+    $done();
+  });
 }
+
+// 入口：定时Cron自动执行
+doSign();
