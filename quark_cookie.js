@@ -1,20 +1,33 @@
-// 夸克扫描王 Cookie & 完整URL 抓取脚本
-const STORAGE_KEY = "QuarkScan_FullCookie";
-const URL_KEY = "QuarkScan_FullURL";
+// 夸克扫描王 Loon抓包获取脚本 对齐PingMe写法
+const scriptName = "夸克参数获取";
+const storeKey = "quark_sign_account_v1";
 
-// 保存Cookie
-const cookie = $request.headers["Cookie"] || $request.headers["cookie"] || "";
-if (cookie) {
-    $persistentStore.write(cookie, STORAGE_KEY);
-    console.log("✅ Cookie已保存：" + cookie);
+function normalizeHeaderNameMap(headers) {
+  const out = {};
+  Object.keys(headers || {}).forEach(k => out[k] = headers[k]);
+  return out;
 }
 
-// 关键修复：保存完整的带参URL，而不是裸地址
-const fullUrl = $request.url;
-if (fullUrl) {
-    $persistentStore.write(fullUrl, URL_KEY);
-    console.log("✅ 完整带参URL已保存：" + fullUrl);
+function saveStore(obj) {
+  $persistentStore.write(JSON.stringify(obj), storeKey);
 }
 
-$notification.post("夸克捕获", "Cookie和带参URL都已抓取成功", "现在可以直接用完整URL签到了");
-$done({});
+function notify(title, body) {
+  $notification.post(scriptName, title, body);
+}
+
+// 抓包入口 拦截http-request请求
+if ($request) {
+  const headersMap = normalizeHeaderNameMap($request.headers || {});
+
+  const captureData = {
+    url: $request.url,
+    headers: headersMap,
+    updatedAt: Date.now()
+  };
+
+  saveStore(captureData);
+  notify("✅ 签到参数抓取成功", "已自动保存，可关闭获取开关");
+  
+  $done({});
+}
