@@ -1,8 +1,8 @@
-// 夸克扫描王 Loon标准签到脚本 对标PingMe语法
+// 夸克扫描王签到脚本（dTUYf接口稳定版）
 const scriptName = "夸克签到";
 const storeKey = "quark_sign_account_v1";
 
-// 读取本地缓存账号参数
+// 读取缓存
 function loadStore() {
   const raw = $persistentStore.read(storeKey);
   if (!raw) return null;
@@ -13,38 +13,36 @@ function loadStore() {
   }
 }
 
-// Loon系统通知
+// 通知
 function notify(title, body) {
   $notification.post(scriptName, title, body);
 }
 
-// 拼接带动态时间戳请求链接
-function buildUrl(info) {
-  const baseUrl = info.url.split("?")[0];
-  const query = info.url.split("?")[1];
-  const timestamp = Date.now();
-  return `${baseUrl}?${query}&timestamp=${timestamp}`;
-}
-
-// 清洗请求头，适配Loon规范
+// 精简请求头（关键优化）
 function getHeaders(info) {
-  const headers = {...info.headers};
-  delete headers[":method"];
-  delete headers[":path"];
-  delete headers[":scheme"];
-  delete headers["Content-Length"];
-  return headers;
+  return {
+    "User-Agent": info.headers["User-Agent"] || info.headers["user-agent"],
+    "Cookie": info.headers["Cookie"] || info.headers["cookie"],
+    "Content-Type": "application/json"
+  };
 }
 
 // 核心签到逻辑
-async function doSign() {
+function doSign() {
   const account = loadStore();
+
   if (!account) {
-    notify("签到失败", "未抓取账号参数，请打开抓包开关进入夸克签到页");
+    notify("❌ 签到失败", "未抓取参数，请打开抓包进入签到页");
     return $done();
   }
 
-  const url = buildUrl(account);
+  // 参数有效期提示（6小时）
+  const diff = Date.now() - account.updatedAt;
+  if (diff > 6 * 60 * 60 * 1000) {
+    notify("⚠️ 参数可能过期", "建议重新打开夸克签到页刷新");
+  }
+
+  const url = account.url; // ❗不再拼接参数
   const headers = getHeaders(account);
 
   $httpClient.post({
@@ -52,26 +50,33 @@ async function doSign() {
     headers: headers,
     body: JSON.stringify({})
   }, (err, resp, data) => {
+
+    console.log("====== 返回数据 ======");
     console.log(data);
+
     if (err) {
-      notify("签到请求异常", JSON.stringify(err));
+      notify("❌ 请求异常", JSON.stringify(err));
       return $done();
     }
+
     try {
       const res = JSON.parse(data);
+
       if (res.code === 0) {
-        notify("签到成功", "夸克每日签到完成");
+        notify("✅ 签到成功", res.msg || "夸克每日签到完成");
       } else if (res.code === 1002) {
-        notify("签到失败 1002", "参数过期，重新打开抓包刷新参数");
+        notify("❌ 签到失败", "参数过期，请重新抓包");
       } else {
-        notify("签到失败", res.msg || "未知错误");
+        notify("❌ 签到失败", res.msg || JSON.stringify(res));
       }
+
     } catch (e) {
-      notify("返回数据解析失败", e.message);
+      notify("❌ 解析失败", data);
     }
+
     $done();
   });
 }
 
-// 入口：定时Cron自动执行
+// 执行
 doSign();
