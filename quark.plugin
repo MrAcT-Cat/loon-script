@@ -1,23 +1,27 @@
 #!name = 夸克扫描王签到助手
-#!desc = 夸克扫描王每日签到
+#!desc = 夸克扫描王每日签到（dTUYf接口版）
 #!date = 2026-5-5
 #!author = MrAcT-Cat
 #!icon = https://raw.githubusercontent.com/axhani/icon/refs/heads/main/quark.png
 
-
 [Argument]
-# 1. 定时签到任务开关
+# 1. 定时签到开关
 arg1 = switch,true,tag=夸克定时签到
-# 2. Cookie/参数获取开关（进签到页抓包时需要打开）
+
+# 2. 抓包获取开关（抓接口用）
 arg2 = switch,true,tag=夸克抓包获取
-# 3. 签到定时时间设置（可在UI里直接修改）
+
+# 3. 定时设置
 arg3 = input,"0 0 8,20 * * *",tag=签到定时
 
+
 [Script]
-# 定时签到脚本（由arg1开关控制）
+# 定时签到
 cron {arg3} script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_sign.js, timeout=600, enable={arg1}, tag=夸克定时签到
 
-# Cookie/参数获取脚本（由arg2开关控制）
+# 抓包（只抓真正签到接口）
 http-request ^https:\/\/scan-order\.quark\.cn\/api\/dTUYf\/Mtydd script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_cookie.js, requires-body=true, timeout=10, enable={arg2}, tag=夸克抓包获取
 
+
+[MITM]
 hostname = scan-order.quark.cn
