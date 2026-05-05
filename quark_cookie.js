@@ -1,17 +1,29 @@
-// 夸克抓包脚本（最终版）
-const key = "quark_sign_data";
+// 夸克抓包（最终版）
+const storeKey = "quark_sign_account_v2";
+
+function notify(t, s) {
+  $notification.post("夸克抓包", t, s);
+}
 
 if ($request) {
-  const data = {
-    url: $request.url,
-    headers: $request.headers,
-    body: $request.body,   // ⭐关键：保存请求体
-    time: Date.now()
-  };
 
-  $persistentStore.write(JSON.stringify(data), key);
+  const url = $request.url;
 
-  $notification.post("夸克扫描王", "✅ 抓包成功", "参数已保存");
+  // ✅ 只抓真正签到接口
+  if (url.indexOf("pOcKNmTupWelFare") !== -1) {
+
+    const data = {
+      url: url,
+      headers: $request.headers,
+      body: $request.body,   // ⭐关键
+      time: Date.now()
+    };
+
+    $persistentStore.write(JSON.stringify(data), storeKey);
+
+    notify("✅ 抓取成功", "已获取签到参数");
+  }
+
 }
 
 $done({});
