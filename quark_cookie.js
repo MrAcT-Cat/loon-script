@@ -1,11 +1,25 @@
-let url = $request.url;
-let body = $request.body || "";
-let cookie = $request.headers.Cookie || $request.headers.cookie;
+// 夸克扫描王 Cookie 自动抓取 & 拼接脚本
+const STORAGE_KEY = "QuarkScan_FullCookie";
 
-// 单独存储夸克扫描数据，不和网盘冲突
-if(cookie)$persistentStore.write(cookie,"scan_cookie");
-$persistentStore.write(url,"scan_sign_url");
-$persistentStore.write(body,"scan_body");
+// 从请求头提取Cookie字段
+const rawCookies = [];
+for (const key in $request.headers) {
+    if (key.toLowerCase() === "cookie") {
+        // 拆分并处理Cookie字段
+        const cookieParts = $request.headers[key].split(/;\s*/);
+        rawCookies.push(...cookieParts);
+    }
+}
 
-$notification.post("夸克扫描","捕获签到数据成功","");
-$done({})
+// 去重、过滤空值，拼接成完整Cookie
+const uniqueCookies = [...new Set(rawCookies.filter(part => part.trim()))];
+const fullCookie = uniqueCookies.join("; ");
+
+// 保存到Loon持久化存储并通知
+if (fullCookie) {
+    $persistentStore.write(fullCookie, STORAGE_KEY);
+    console.log("✅ 夸克扫描王Cookie更新成功，共", uniqueCookies.length, "个字段");
+    $notification.post("夸克Cookie", "抓取成功", `已保存完整Cookie（${uniqueCookies.length}个字段）`);
+}
+
+$done({});
