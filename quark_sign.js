@@ -52,6 +52,7 @@ async function doSign() {
     headers: headers,
     body: JSON.stringify({})
   }, (err, resp, data) => {
+    console.log(data);
     if (err) {
       notify("签到请求异常", JSON.stringify(err));
       return $done();
