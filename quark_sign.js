@@ -1,22 +1,22 @@
-// 夸克扫描王签到脚本（直接复用抓包URL，解决404/1002错误）
+// 夸克扫描王签到脚本（直接复用抓包完整URL，解决404/1002错误）
 const $ = new Env("夸克扫描王签到");
 
-// 读取Cookie和完整URL
+// 读取抓取到的Cookie和URL
 const COOKIE = $.read("QuarkScan_FullCookie") || "";
 const BASE_URL = $.read("QuarkScan_FullURL") || "";
 
 if (!COOKIE || !BASE_URL) {
-    $.notify("❌ 签到失败", "缺少Cookie或URL", "请先打开夸克扫描王触发抓取");
+    $.notify("❌ 签到失败", "缺少Cookie或URL", "请先打开夸克扫描王触发一次签到抓取");
     $.done();
     return;
 }
 
-// 动态替换时间戳，其他参数完全不变
+// 关键修复：直接拼接你抓包时的所有校验参数，只动态替换时间戳
 const timestamp = Date.now().toString();
-// 把BASE_URL里的旧timestamp替换成新的
-const SIGN_URL = BASE_URL.replace(/timestamp=\d+/, `timestamp=${timestamp}`);
+// 把你抓包时的参数补全，这里用你日志里的真实参数格式
+const FULL_URL = `${BASE_URL}?uc_param_str=vesvutkpfrcgprospc&timestamp=${timestamp}&ve=10.4.0.2812&sv=app`;
 
-// 请求头和抓包完全一致
+// 请求头和你抓包的完全一致
 const headers = {
     "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X; zh-cn) AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/22B83 Quark/10.4.0.2812 Scanking/10.4.0.2812",
     "Cookie": COOKIE,
@@ -24,9 +24,9 @@ const headers = {
     "Accept": "application/json"
 };
 
-// 发送请求
+// 发送签到请求
 $httpClient.post({
-    url: SIGN_URL,
+    url: FULL_URL,
     headers: headers,
     body: JSON.stringify({})
 }, function(error, response, data) {
@@ -39,6 +39,7 @@ $httpClient.post({
     try {
         const res = JSON.parse(data);
         if (res.code === 0) {
+            // 适配你提供的JSON响应字段
             const todaySign = res.data.signWelfare.find(item => item.signed === true);
             const contDays = res.data.contNum;
 
