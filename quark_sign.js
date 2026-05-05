@@ -1,4 +1,4 @@
-// 夸克扫描王 专用签到脚本（增强版）
+// 夸克扫描王 专用签到脚本（完美适配版）
 const storeKey = "quark_scan_data";
 
 function notify(title, body) {
@@ -39,8 +39,13 @@ function run() {
 
         // 夸克扫描王接口专用状态解析
         if (j.code === 0) {
-          // 解析扫描王特有的签到数据
-          const continueDays = j.data?.continueDays || j.data?.continue_days || "未知";
+          // 优先解析扫描王可能存在的签到天数字段
+          let continueDays = "首次";
+          if (j.data?.continueDays) continueDays = j.data.continueDays;
+          else if (j.data?.continue_days) continueDays = j.data.continue_days;
+          else if (j.data?.day) continueDays = j.data.day;
+          else if (j.data?.signDays) continueDays = j.data.signDays;
+
           const reward = j.data?.reward || j.data?.prize || "会员/积分";
           notify("✅ 签到成功", `连续签到${continueDays}天，获得${reward}`);
         } 
