@@ -18,6 +18,6 @@ arg3 = input,"0 0 8,20 * * *",tag=签到定时
 cron {arg3} script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_sign.js, timeout=600, enable={arg1}, tag=夸克定时签到
 
 # Cookie/参数获取脚本（由arg2开关控制）
-http-request ^https:\/\/scan-order\.quark\.cn\/api\/dTUYf\/Mtydd
+http-request ^https:\/\/scan-order\.quark\.cn\/api\/dTUYf\/Mtydd script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_cookie.js, requires-body=true, timeout=10, enable={arg2}, tag=夸克抓包获取
 
 hostname = scan-order.quark.cn
