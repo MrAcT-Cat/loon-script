@@ -1,21 +1,21 @@
-#!name=夸克签到助手
-#!desc=一键开关，可视化管理夸克扫描王签到任务
-#!author=MrAcT-Cat
-#!system=ios
-#!category=My Tools
+#!name = 夸克扫描王签到助手
+#!desc = 夸克网盘每日签到，一键开关，可视化管理
+#!date = 2026-5-5
+#!author = MrAcT-Cat
+#!loon_version = 3.2.4(787)
 
-[Host]
-scan-order.quark.cn
+[Argument]
+# 1. 签到任务总开关（控制定时签到）
+arg1 = switch,true,tag=夸克定时签到
+# 2. 定时时间设置（可在UI里直接修改）
+arg2 = input,"0 0 8,20 * * *",tag=签到定时
 
 [Script]
-# 抓Cookie脚本（必须开启，用于抓取签到参数）
+# 定时签到脚本（由上面的arg1开关控制）
+cron {arg2} script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_sign.js, timeout=600, enable={arg1}, tag=夸克定时签到
+
+# 抓Cookie脚本（必须开启，无法通过UI关闭，因为抓包是签到的前提）
 http-request ^https:\/\/scan-order\.quark\.cn\/api\/sd6hJds8SIgn\/pOcKNmTupWelFare script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_cookie.js, requires-body=true, timeout=10, tag=夸克抓包
 
-# 定时签到脚本（支持UI开关控制）
-cron "0 0 8,20 * * *" script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_sign.js, tag=夸克定时签到
-
-# 👇 UI控制面板（和你截图里的PingMe插件风格完全一致）
-[Panel]
-夸克定时签到 = script-name=夸克定时签到, update-interval=3600, opt-args=--auto
-签到时间 = text=每天 08:00 / 20:00 自动签到, desc=可通过上方开关临时禁用任务
-状态说明 = text=开关仅控制定时任务，抓包脚本不受影响
+[MITM]
+hostname = scan-order.quark.cn
