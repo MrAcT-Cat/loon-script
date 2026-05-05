@@ -5,8 +5,8 @@ function notify(title, body) {
     $notification.post(scriptName, title, body);
 }
 
-// 万能匹配：只要是夸克扫描王的请求，全部抓取
-if ($request && $request.url.includes("scan-order.quark.cn")) {
+// 只抓取签到接口
+if ($request && $request.url.includes("scan-order.quark.cn") && $request.url.includes("WelFare")) {
     let data = {
         url: $request.url,
         headers: $request.headers,
