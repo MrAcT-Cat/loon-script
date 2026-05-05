@@ -1,9 +1,9 @@
 #!name = 夸克扫描王签到助手
-#!desc = 夸克网盘每日签到，一键开关，可视化管理
+#!desc = 夸克扫描王每日签到
 #!date = 2026-5-5
 #!author = MrAcT-Cat
 #!icon = https://raw.githubusercontent.com/axhani/icon/refs/heads/main/quark.png
-#!loon_version = 3.2.4(787)
+
 
 [Argument]
 # 1. 定时签到任务开关
