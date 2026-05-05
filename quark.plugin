@@ -1,12 +1,11 @@
-[General]
-; 夸克网盘签到插件配置
-
-[MitM]
-hostname = drive-m.quark.cn
+#!name=夸克扫描签到
+#!desc=夸克扫描王专属签到
+#!author=Qi Shen
 
 [Script]
-; 抓包脚本（开启一次后可关闭）
-type=http-response,pattern=^https?://drive-m\.quark\.cn/1/clouddrive/capacity/growth/.*,script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_cookie.js,tag=夸克请求捕获
+http-request ^https:\/\/scan-order\.quark\.cn\/api\/sd6hJds8SIgn\/pOcKNmTupWelFare script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_cookie.js,requires-body=true,timeout=10,tag=夸克捕获
 
-; 自动签到定时脚本（每天08:00执行）
-type=cron,cronexp=0 0 8 * * *,script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_sign.js,tag=夸克自动签到
+cron "0 9 * * *" script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_sign.js,timeout=60,tag=夸克签到
+
+[MITM]
+hostname = scan-order.quark.cn
