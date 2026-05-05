@@ -1,10 +1,9 @@
-let cookie = $request.headers.Cookie || $request.headers.cookie;
+let url = $request.url;
+let body = $request.body || "";
 
-if (cookie) {
-  $persistentStore.write(cookie, "quark_cookie");
-  $notification.post("夸克", "Cookie获取成功", cookie);
-} else {
-  $notification.post("夸克", "未获取到Cookie", "");
-}
+$persistentStore.write(url, "quark_url");
+$persistentStore.write(body, "quark_body");
+
+$notification.post("夸克", "请求捕获成功", "");
 
 $done({});
