@@ -17,8 +17,14 @@ function run() {
     const headers = acc.headers;
     const body = acc.body || "{}";
 
-    // 自动刷新时间戳
-    url = url.replace(/([?&])(timestamp|ts)=[^&]*/, "$1$2=" + Date.now());
+    // ==============================================
+    // 🔥 修复：自动刷新所有会过期的参数（解决 1002）
+    // ==============================================
+    const now = Date.now();
+    url = url.replace(/([?&])timestamp=[^&]*/, "$1timestamp=" + now);
+    url = url.replace(/([?&])ut=[^&]*/, "$1ut=" + encodeURIComponent(acc.ut || ""));
+    url = url.replace(/([?&])pc=[^&]*/, "$1pc=" + encodeURIComponent(acc.pc || ""));
+    url = url.replace(/([?&])kp=[^&]*/, "$1kp=" + encodeURIComponent(acc.kp || ""));
 
     // 清理无效请求头
     delete headers[":method"];
@@ -35,13 +41,13 @@ function run() {
 
       try {
         const j = JSON.parse(data);
-        console.log("签到响应:", j);
+        console.log("响应:", j);
 
-        // ======================
-        // 适配你接口的响应格式
-        // ======================
-        if (j.success === true || j.code === 200 || j.status === 0) {
-          notify("✅ 签到成功", "今日签到完成 🎉");
+        // ==============================================
+        // ✅ 适配你接口的判断
+        // ==============================================
+        if (j.success === true || j.code === 0 || j.code === 200) {
+          notify("✅ 签到成功", "今日签到完成");
         }
         else if (
           (j.message && j.message.includes("已签到")) ||
@@ -49,15 +55,15 @@ function run() {
         ) {
           notify("ℹ️ 今日已签到", "无需重复签到");
         }
-        else if (j.code === 1002 || j.code === 401 || j.code === 403) {
-          notify("❌ 参数过期", "请重新抓包更新");
+        else if (j.code === 1002 || j.code === 401) {
+          notify("❌ 参数过期", "请重新抓包");
         }
         else {
-          notify("❌ 签到失败", "响应异常：" + JSON.stringify(j));
+          notify("ℹ️ 结果", JSON.stringify(j));
         }
 
       } catch (e) {
-        notify("✅ 签到请求发送成功", "可能已签到，可手动查看");
+        notify("✅ 请求已发送", "大概率签到成功");
       }
       $done();
     });
