@@ -1,39 +1,68 @@
-// 夸克扫描王专用签到脚本（纯净版，无额外参数）
-let cookie = $persistentStore.read("scan_cookie");
-let url = $persistentStore.read("scan_sign_url");
-let body = $persistentStore.read("scan_body");
+// 夸克扫描王签到脚本（直接复用抓包URL，解决404/1002错误）
+const $ = new Env("夸克扫描王签到");
 
-if (!cookie || !url) {
-    $notification.post("夸克扫描签到", "失败｜未捕获数据", "请先手动签到一次抓包");
-    $done();
+// 读取Cookie和完整URL
+const COOKIE = $.read("QuarkScan_FullCookie") || "";
+const BASE_URL = $.read("QuarkScan_FullURL") || "";
+
+if (!COOKIE || !BASE_URL) {
+    $.notify("❌ 签到失败", "缺少Cookie或URL", "请先打开夸克扫描王触发抓取");
+    $.done();
+    return;
 }
 
-// 仅用抓包时保存的原始Cookie和请求体，不额外添加任何参数
-let headers = {
-    "Cookie": cookie,
-    "Content-Type": "application/json"
+// 动态替换时间戳，其他参数完全不变
+const timestamp = Date.now().toString();
+// 把BASE_URL里的旧timestamp替换成新的
+const SIGN_URL = BASE_URL.replace(/timestamp=\d+/, `timestamp=${timestamp}`);
+
+// 请求头和抓包完全一致
+const headers = {
+    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X; zh-cn) AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/22B83 Quark/10.4.0.2812 Scanking/10.4.0.2812",
+    "Cookie": COOKIE,
+    "Content-Type": "application/json",
+    "Accept": "application/json"
 };
 
+// 发送请求
 $httpClient.post({
-    url: url,
+    url: SIGN_URL,
     headers: headers,
-    body: body
-}, (err, resp, data) => {
-    if (err) {
-        $notification.post("夸克扫描签到", "请求失败", JSON.stringify(err));
-    } else {
-        try {
-            let res = JSON.parse(data || "{}");
-            if (res.code === 0) {
-                $notification.post("夸克扫描签到", "✅ 签到成功", "");
-            } else if (res.msg?.includes("已签到") || res.message?.includes("已签到")) {
-                $notification.post("夸克扫描签到", "今日已签到", "无需重复签到");
-            } else {
-                $notification.post("夸克扫描签到", "签到失败", res.msg || res.message || data);
-            }
-        } catch (e) {
-            $notification.post("夸克扫描签到", "返回异常", data);
-        }
+    body: JSON.stringify({})
+}, function(error, response, data) {
+    if (error) {
+        $.notify("❌ 签到失败", "请求错误", error);
+        $.done();
+        return;
     }
-    $done();
+
+    try {
+        const res = JSON.parse(data);
+        if (res.code === 0) {
+            const todaySign = res.data.signWelfare.find(item => item.signed === true);
+            const contDays = res.data.contNum;
+
+            if (todaySign) {
+                const reward = todaySign.welfare.coin > 0 ? `${todaySign.welfare.coin}积分` : todaySign.welfare.awardName;
+                $.notify("✅ 签到成功", `连续签到${contDays}天`, `获得奖励：${reward}`);
+            } else {
+                $.notify("⚠️ 今日已签到", "无需重复操作", `当前连续签到${contDays}天`);
+            }
+        } else {
+            $.notify("❌ 签到失败", `错误码：${res.code}`, res.msg);
+        }
+    } catch (e) {
+        $.notify("❌ 解析失败", "JSON错误", e.message);
+    }
+    $.done();
 });
+
+// Loon环境兼容
+function Env(name) {
+    return new class {
+        constructor(name) { this.name = name; }
+        notify(title, subtitle, content) { $notification.post(title, subtitle, content); }
+        read(key) { return $persistentStore.read(key); }
+        done() { $done(); }
+    }(name);
+}
