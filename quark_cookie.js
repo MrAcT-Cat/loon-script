@@ -5,9 +5,8 @@ function notify(title, body) {
   $notification.post(scriptName, title, body);
 }
 
-// 只匹配真正的签到接口，避免抓错
-if ($request && $request.method === "POST" && $request.url.includes("/sd6hJds8SIgn/pOcKNmTupWelFare")) {
-  const data = {
+if ($request && $request.method == "POST" && $request.url.includes("uc_param_str=")) {
+  let data = {
     url: $request.url,
     headers: $request.headers,
     body: $request.body,
