@@ -4,17 +4,16 @@
 #!author = MrAcT-Cat
 #!loon_version = 3.2.4(787)
 
+# 👇 这一段就是生成开关和输入框的关键，你之前没加上
 [Argument]
-# 1. 签到任务总开关（控制定时签到）
 arg1 = switch,true,tag=夸克定时签到
-# 2. 定时时间设置（可在UI里直接修改）
 arg2 = input,"0 0 8,20 * * *",tag=签到定时
 
 [Script]
-# 定时签到脚本（由上面的arg1开关控制）
+# 定时签到脚本（由arg1的开关控制）
 cron {arg2} script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_sign.js, timeout=600, enable={arg1}, tag=夸克定时签到
 
-# 抓Cookie脚本（必须开启，无法通过UI关闭，因为抓包是签到的前提）
+# 抓Cookie脚本（必须开启，无开关控制）
 http-request ^https:\/\/scan-order\.quark\.cn\/api\/sd6hJds8SIgn\/pOcKNmTupWelFare script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/quark_cookie.js, requires-body=true, timeout=10, tag=夸克抓包
 
 [MITM]
