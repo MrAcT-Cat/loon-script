@@ -1,73 +1,59 @@
-// 夸克扫描王签到脚本（最终稳定版）
-const scriptName = "夸克签到";
-const storeKey = "quark_sign_account_v1";
+// 夸克签到脚本（最终稳定版）
+const key = "quark_sign_data";
 
-function loadStore() {
-  const raw = $persistentStore.read(storeKey);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch (e) {
-    return null;
-  }
+function notify(title, msg) {
+  $notification.post("夸克扫描王", title, msg);
 }
 
-function notify(title, body) {
-  $notification.post(scriptName, title, body);
+const raw = $persistentStore.read(key);
+
+if (!raw) {
+  notify("❌ 未抓到参数", "先打开夸克签到页抓一次");
+  $done();
 }
 
-function getHeaders(info) {
-  return {
-    "User-Agent": info.headers["User-Agent"] || info.headers["user-agent"],
-    "Cookie": info.headers["Cookie"] || info.headers["cookie"],
+let data;
+try {
+  data = JSON.parse(raw);
+} catch (e) {
+  notify("❌ 数据异常", "重新抓包");
+  $done();
+}
+
+// 判断是否过期（6小时）
+if (Date.now() - data.time > 6 * 60 * 60 * 1000) {
+  notify("⚠️ 参数可能过期", "建议重新打开签到页");
+}
+
+$httpClient.post({
+  url: data.url,
+  headers: {
+    "User-Agent": data.headers["User-Agent"] || data.headers["user-agent"],
+    "Cookie": data.headers["Cookie"] || data.headers["cookie"],
     "Content-Type": "application/json"
-  };
-}
+  },
+  body: data.body
+}, (err, resp, body) => {
 
-function doSign() {
-  const account = loadStore();
-
-  if (!account) {
-    notify("❌ 签到失败", "未抓取参数");
+  if (err) {
+    notify("❌ 请求失败", JSON.stringify(err));
     return $done();
   }
 
-  const diff = Date.now() - account.updatedAt;
-  if (diff > 6 * 60 * 60 * 1000) {
-    notify("⚠️ 参数可能过期", "建议重新抓包");
+  try {
+    const res = JSON.parse(body);
+
+    if (res.code === 0) {
+      notify("✅ 签到成功", res.msg || "完成");
+    } else if (res.code === 1002) {
+      notify("❌ 参数过期", "重新抓包");
+    } else {
+      notify("❌ 签到失败", res.msg || body);
+    }
+
+  } catch (e) {
+    notify("❌ 返回异常", body);
   }
 
-  $httpClient.post({
-    url: account.url,
-    headers: getHeaders(account),
-    body: account.body   // ✅ 使用真实请求体
-  }, (err, resp, data) => {
-
-    console.log("====== 返回数据 ======");
-    console.log(data);
-
-    if (err) {
-      notify("❌ 请求异常", JSON.stringify(err));
-      return $done();
-    }
-
-    try {
-      const res = JSON.parse(data);
-
-      if (res.code === 0) {
-        notify("✅ 签到成功", res.msg || "签到完成");
-      } else if (res.code === 1002) {
-        notify("❌ 参数过期", "请重新抓包");
-      } else {
-        notify("❌ 签到失败", res.msg || JSON.stringify(res));
-      }
-
-    } catch (e) {
-      notify("❌ 解析失败", data);
-    }
-
-    $done();
-  });
-}
-
-doSign();
+  $done();
+});
