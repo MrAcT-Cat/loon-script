@@ -37,25 +37,23 @@ function run() {
         let j = JSON.parse(data);
 
         // ==============================================
-        // 这里完全按照你真实的接口返回解析！
+        // 完全按你真实返回解析 ✅
         // ==============================================
         if (j.code === 0) {
-          const contNum = j.data?.contNum || "0";                 // 连续签到天数
-          const validCoins = j.data?.validCoins || "0";           // 总金币
-          const todayCoin = j.data?.signWelfare[0]?.welfare?.coin || 0; // 今日奖励金币
+          const contNum = j.data?.contNum || 0;
+          const validCoins = j.data?.validCoins || 0;
+          const todaySigned = j.data?.signWelfare?.[0]?.signed || false;
+          const todayCoin = j.data?.signWelfare?.[0]?.welfare?.coin || 0;
 
-          notify("✅ 签到成功",
-            `连续签到 ${contNum} 天\n` +
-            `获得 ${todayCoin} 金币\n` +
-            `当前总金币：${validCoins}`
-          );
-        }
-        else if (j.msg?.includes("已签到") || j.data?.signWelfare[0]?.signed === true) {
-          notify("ℹ️ 今日已签到", "无需重复签到");
-        }
+          if (todaySigned) {
+            notify("ℹ️ 今日已签到", `连续签到 ${contNum} 天\n当前金币：${validCoins}`);
+          } else {
+            notify("✅ 签到成功", `连续签到 ${contNum} 天\n获得 ${todayCoin} 金币\n当前金币：${validCoins}`);
+          }
+        } 
         else if (j.code === 1002) {
           notify("❌ 参数过期", "请重新抓包");
-        }
+        } 
         else {
           notify("⚠️ 签到状态", j.msg || "状态码：" + j.code);
         }
