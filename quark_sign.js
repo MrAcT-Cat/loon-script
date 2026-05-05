@@ -1,4 +1,3 @@
-// 夸克扫描王 专用签到脚本（完美适配版）
 const storeKey = "quark_scan_data";
 
 function notify(title, body) {
@@ -8,7 +7,7 @@ function notify(title, body) {
 function run() {
   let raw = $persistentStore.read(storeKey);
   if (!raw) {
-    notify("❌ 未获取参数", "请先打开抓包开关，进入扫描王签到页");
+    notify("❌ 未获取参数", "请先打开抓包进入签到页");
     return $done();
   }
 
@@ -18,10 +17,10 @@ function run() {
     let headers = acc.headers;
     let body = acc.body || "{}";
 
-    // 自动更新时间戳，解决1002参数错误
+    // 自动刷新时间戳
     url = url.replace(/([?&])timestamp=[^&]*/, "$1timestamp=" + Date.now());
 
-    // 清理无效请求头
+    // 清理无用头
     delete headers[":method"];
     delete headers[":path"];
     delete headers[":scheme"];
@@ -37,36 +36,36 @@ function run() {
       try {
         let j = JSON.parse(data);
 
-        // 夸克扫描王接口专用状态解析
+        // ==============================================
+        // 这里完全按照你真实的接口返回解析！
+        // ==============================================
         if (j.code === 0) {
-          // 优先解析扫描王可能存在的签到天数字段
-          let continueDays = "首次";
-          if (j.data?.continueDays) continueDays = j.data.continueDays;
-          else if (j.data?.continue_days) continueDays = j.data.continue_days;
-          else if (j.data?.day) continueDays = j.data.day;
-          else if (j.data?.signDays) continueDays = j.data.signDays;
+          const contNum = j.data?.contNum || "0";                 // 连续签到天数
+          const validCoins = j.data?.validCoins || "0";           // 总金币
+          const todayCoin = j.data?.signWelfare[0]?.welfare?.coin || 0; // 今日奖励金币
 
-          const reward = j.data?.reward || j.data?.prize || "会员/积分";
-          notify("✅ 签到成功", `连续签到${continueDays}天，获得${reward}`);
-        } 
-        // 扫描王常见的「已签到」错误码
-        else if (j.code === 4001 || j.code === 1001 || (j.msg && j.msg.includes("已签到"))) {
-          notify("ℹ️ 已签到", "今天已经签到过了，无需重复签到");
+          notify("✅ 签到成功",
+            `连续签到 ${contNum} 天\n` +
+            `获得 ${todayCoin} 金币\n` +
+            `当前总金币：${validCoins}`
+          );
+        }
+        else if (j.msg?.includes("已签到") || j.data?.signWelfare[0]?.signed === true) {
+          notify("ℹ️ 今日已签到", "无需重复签到");
         }
         else if (j.code === 1002) {
-          notify("❌ 签到失败", "参数过期，请重新抓包");
+          notify("❌ 参数过期", "请重新抓包");
         }
         else {
-          notify("⚠️ 签到状态", `状态码：${j.code}，提示：${j.msg || "未知错误"}`);
+          notify("⚠️ 签到状态", j.msg || "状态码：" + j.code);
         }
       } catch (e) {
-        notify("❌ 解析失败", "服务器返回数据异常");
-        console.log("【夸克扫描王】原始响应：", data);
+        notify("❌ 解析失败", "数据异常");
       }
       $done();
     });
   } catch (e) {
-    notify("❌ 数据异常", "请重新抓包获取参数");
+    notify("❌ 数据异常", "请重新抓包");
     $done();
   }
 }
