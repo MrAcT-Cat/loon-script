@@ -5,24 +5,31 @@ function notify(title, body) {
     $notification.post(scriptName, title, body);
 }
 
-if ($request && $request.url.includes("scan-order.quark.cn") && $request.url.includes("WelFare")) {
+if (
+  $request &&
+  $request.method === "POST" &&
+  $request.url.includes("pDChohbxo82nCoIn")
+) {
+
+    let headers = $request.headers;
+
+    // ✅ 只保留关键 header
+    let cleanHeaders = {
+        "Content-Type": headers["Content-Type"] || headers["content-type"],
+        "User-Agent": headers["User-Agent"] || headers["user-agent"],
+        "Cookie": headers["Cookie"] || headers["cookie"]
+    };
+
     let data = {
         url: $request.url,
-        headers: $request.headers,
+        headers: cleanHeaders,
         body: $request.body,
-        ut: extractParam($request.url, "ut"),
-        pc: extractParam($request.url, "pc"),
-        kp: extractParam($request.url, "kp"),
-        ts: Date.now()
+        time: Date.now()
     };
-    $persistentStore.write(JSON.stringify(data), storeKey);
-    notify("✅ 抓取成功", "已保存全部参数");
-}
 
-function extractParam(url, key) {
-    const regex = new RegExp(`[?&]${key}=([^&]*)`, "i");
-    const match = url.match(regex);
-    return match ? decodeURIComponent(match[1]) : "";
+    $persistentStore.write(JSON.stringify(data), storeKey);
+
+    notify("✅ 抓取成功", "签到参数已更新");
 }
 
 $done({});
