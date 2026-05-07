@@ -2,34 +2,59 @@ const scriptName = "夸克扫描王抓包";
 const storeKey = "quark_scan_data";
 
 function notify(title, body) {
-    $notification.post(scriptName, title, body);
+  $notification.post(scriptName, title, body);
+}
+
+function getHeader(headers, key) {
+  return headers[key] || headers[key.toLowerCase()] || "";
 }
 
 if (
-  $request &&
+  typeof $request !== "undefined" &&
   $request.method === "POST" &&
   $request.url.includes("pDChohbxo82nCoIn")
 ) {
 
-    let headers = $request.headers;
+  const headers = $request.headers || {};
+  const body = $request.body || "";
 
-    // ✅ 只保留关键 header
-    let cleanHeaders = {
-        "Content-Type": headers["Content-Type"] || headers["content-type"],
-        "User-Agent": headers["User-Agent"] || headers["user-agent"],
-        "Cookie": headers["Cookie"] || headers["cookie"]
-    };
+  // body 太短直接忽略
+  if (body.length < 50) {
+    notify("⚠️ 抓包失败", "请求体异常");
+    $done({});
+    return;
+  }
 
-    let data = {
-        url: $request.url,
-        headers: cleanHeaders,
-        body: $request.body,
-        time: Date.now()
-    };
+  // 保存关键请求数据
+  const data = {
+    url: $request.url,
+    method: $request.method,
+    headers: {
+      "Content-Type": getHeader(headers, "Content-Type"),
+      "User-Agent": getHeader(headers, "User-Agent"),
+      "Cookie": getHeader(headers, "Cookie")
+    },
+    body: body,
+    updateTime: new Date().toLocaleString()
+  };
 
-    $persistentStore.write(JSON.stringify(data), storeKey);
+  // 写入本地
+  const success = $persistentStore.write(
+    JSON.stringify(data),
+    storeKey
+  );
 
-    notify("✅ 抓取成功", "签到参数已更新");
+  if (success) {
+    notify(
+      "✅ 夸克参数更新成功",
+      "签到参数已保存"
+    );
+  } else {
+    notify(
+      "❌ 保存失败",
+      "persistentStore 写入失败"
+    );
+  }
 }
 
 $done({});
