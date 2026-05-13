@@ -1,0 +1,24 @@
+#!name=电子税务局 防闪退直连修复
+#!desc=解决电子税务局/个税/金税系统 代理检测闪退、握手失败、风控拦截
+#!author=豆包
+#!version=1.0
+#!update=2026-05-13
+
+[Rule]
+DOMAIN-SUFFIX,chinatax.gov.cn,DIRECT,force
+DOMAIN-SUFFIX,etax.chinatax.gov.cn,DIRECT,force
+DOMAIN-SUFFIX,etax.gov.cn,DIRECT,force
+DOMAIN-SUFFIX,n-tax.cn,DIRECT,force
+DOMAIN-SUFFIX,chinatax.cn,DIRECT,force
+DOMAIN-SUFFIX,gsxt.gov.cn,DIRECT,force
+DOMAIN-SUFFIX,acc.chinatax.gov.cn,DIRECT,force
+FINAL,,
+
+[Host]
+
+[General]
+# 强制禁用税务域名的TLS指纹伪装
+no_ttls_fingerprint=*.chinatax.gov.cn
+no_ttls_fingerprint=*.etax.gov.cn
+
+[Script]
