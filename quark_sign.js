@@ -1,160 +1,49 @@
-const storeKey = "quark_scan_data";
+// ==Loon==
+// @name 夸克扫描王自动签到
+// @author Grok
+// @cron 0 9 * * * 
+// ==/Loon==
 
-function notify(title, body) {
-  $notification.post("夸克扫描王", title, body);
-}
+const url = "https://scan-order.quark.cn/api/sd6hJds8SIgn/pDChohbxo82nCoIn";
 
-function done() {
-  $done({});
-}
+const headers = {
+    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X; zh-cn) AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/22B83 Quark/10.4.0.2812 Scanking/10.4.0.2812 Mobile",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "zh-Hans;q=1, zh-Hans-CN;q=0.9, en-CN;q=0.8",
+    "Cookie": "_er_is_back_to_node=0; _er_uuid=BHHIIJBIIGAAI-JxUs4RMXYq; isg=BBMTQ7pNfsTHazwWIgKaLBTGqJM9yKeKTvw4RMUwVTJNRDbmTZlM21rWejIqf_-C; tfstk=gQTsDSiPhjGwjrhtHRlUNnTAGIbMfXuPXS1vZIUaMNQOHt92LNSAb17fDdBe7i7tmjTfpIYZsIJwRE9ydjxN0CEp9_BH_ikmsSFMRLa47AmMMrsVkYkrz4RGsZbxUxXJFByGM_VtuiEtJNf20ywnF4RMsWF_Hb-Kzq9tV8XOHKI99kCRprC9HrIKOsC4BoU9HBhCK_6YBiIOp2CPwZBvHZhB99fAk1pAkXOdKsdGxYfnSTAsiPllCFiGJCBQkrLOPG1Wuoz7Pe11GlAOdGSwR1s1FMxWq_TMDFTdqEDSwwL6CFIBQmU5JF96WM9-Ly9c4oyPFxDUcWsuk6ZiOXZ0m_m3LkdBfiZCX6feJXGQ0LsOt66rOXZ0mGChTehIOoJ5."
+};
 
-function run() {
+const body = {
+    "chid": "d185a0655fcf47abb634fe8ade178ed2",
+    "fr": "iphone",
+    "product": "welfare_create",
+    "bucket": "@15694_B@",
+    "kp": "LuH4LcHx++sjn00UZFii2RksPcQzeOuDu+xBVfPWaz+5u+9X+U3uI9PpuwuhGNblcHyXv4R8twTKS6OsbCCTyjyczBGIk508ZyUQ/rAuPxecTQ==",
+    "ve": "10.4.0.2812",
+    "ut": "LuFw5fJHq+1UkEW/giQ2uyJERq2m4Ne22FnUZUJ28Hbq7w==",
+    "timestamp": Date.now().toString(),
+    "pr": "scanking",
+    "token": "05be6a7280cd82bad207e1d44ab454b9"
+};
 
-  const raw = $persistentStore.read(storeKey);
-
-  if (!raw) {
-    notify("❌ 未获取参数", "请先打开夸克签到页");
-    return done();
-  }
-
-  let acc;
-
-  try {
-    acc = JSON.parse(raw);
-  } catch (e) {
-    notify("❌ 本地数据损坏", "请重新抓包");
-    return done();
-  }
-
-  if (!acc.url || !acc.headers || !acc.body) {
-    notify("❌ 参数不完整", "请重新抓包");
-    return done();
-  }
-
-  let body;
-
-  try {
-    body = JSON.parse(acc.body);
-  } catch (e) {
-    notify("❌ Body解析失败", "请重新抓包");
-    return done();
-  }
-
-  // ⚠️ 不建议改 timestamp
-  // 很多接口 token 与 timestamp 强绑定
-  // 直接使用抓到的原始 body 更稳
-
-  const headers = Object.assign({}, acc.headers);
-
-  // 清理无效 header
-  [
-    ":authority",
-    ":method",
-    ":path",
-    ":scheme",
-    "Content-Length",
-    "content-length",
-    "Host",
-    "host"
-  ].forEach(k => delete headers[k]);
-
-  $httpClient.post(
-    {
-      url: acc.url,
-      headers: headers,
-      body: JSON.stringify(body)
-    },
-    (err, resp, data) => {
-
-      if (err) {
-        notify("❌ 请求失败", err.message || "网络异常");
-        return done();
-      }
-
-      if (!data) {
-        notify("❌ 无响应数据", "请求可能被拦截");
-        return done();
-      }
-
-      try {
-
-        const j = JSON.parse(data);
-
-        console.log("夸克签到响应:");
-        console.log(data);
-
-        // 成功
-        if (j.code === 0) {
-
-          const coin =
-            j.data?.currObtainWelfare?.coin || 0;
-
-          const vip =
-            j.data?.currObtainWelfare?.awardName || "";
-
-          const day =
-            j.data?.contNum || 0;
-
-          let msg = `连续 ${day} 天`;
-
-          if (coin) {
-            msg += ` · +${coin}金币`;
-          }
-
-          if (vip) {
-            msg += ` · ${vip}`;
-          }
-
-          notify("✅ 签到成功", msg);
-        }
-
-        // 已签到
-        else if (
-          (j.msg && j.msg.includes("已")) ||
-          (j.message && j.message.includes("已"))
-        ) {
-
-          notify(
-            "ℹ️ 今日已签到",
-            j.msg || j.message
-          );
-        }
-
-        // 参数失效
-        else if (
-          j.code === 401 ||
-          j.code === 403 ||
-          j.code === 1002
-        ) {
-
-          notify(
-            "❌ 参数已失效",
-            "打开夸克签到页重新抓包"
-          );
-        }
-
-        // 其它情况
-        else {
-
-          notify(
-            "⚠️ 未知返回",
-            `${j.msg || "无msg"} (${j.code})`
-          );
-        }
-
-      } catch (e) {
-
-        console.log(data);
-
-        notify(
-          "⚠️ 响应解析失败",
-          "请查看日志"
-        );
-      }
-
-      done();
+$httpClient.post({ url: url, headers: headers, body: JSON.stringify(body) }, (error, response, data) => {
+    if (error) {
+        $notification.post("夸克扫描王", "❌ 请求失败", error.message || error);
+        $done();
     }
-  );
-}
 
-run();
+    try {
+        const json = JSON.parse(data);
+        if (json.code === 0 || json.status === 0) {
+            const coin = json.data?.currObtainWelfare?.coin || 0;
+            const days = json.data?.contNum || "?";
+            $notification.post("✅ 夸克扫描王签到成功", `获得 ${coin} 金币 | 连续 ${days} 天`, "");
+        } else {
+            $notification.post("❌ 夸克扫描王签到失败", json.msg || "未知错误", "");
+        }
+    } catch (e) {
+        $notification.post("❌ 夸克扫描王异常", e.message, "");
+    }
+    $done();
+});
