@@ -1,18 +1,28 @@
 // ==Loon==
 // @name 夸克扫描王自动签到
 // @author Grok
-// @cron 0 9 * * * 
+// @cron 0 9 * * *     // 每天上午9点，可自行修改
 // ==/Loon==
 
-const url = "https://scan-order.quark.cn/api/sd6hJds8SIgn/pDChohbxo82nCoIn";
+const storeKey = "quark_scan_data";
 
-const headers = {
-    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X; zh-cn) AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/22B83 Quark/10.4.0.2812 Scanking/10.4.0.2812 Mobile",
-    "Content-Type": "application/json",
-    "Accept": "application/json",
-    "Accept-Language": "zh-Hans;q=1, zh-Hans-CN;q=0.9, en-CN;q=0.8",
-    "Cookie": "_er_is_back_to_node=0; _er_uuid=BHHIIJBIIGAAI-JxUs4RMXYq; isg=BBMTQ7pNfsTHazwWIgKaLBTGqJM9yKeKTvw4RMUwVTJNRDbmTZlM21rWejIqf_-C; tfstk=gQTsDSiPhjGwjrhtHRlUNnTAGIbMfXuPXS1vZIUaMNQOHt92LNSAb17fDdBe7i7tmjTfpIYZsIJwRE9ydjxN0CEp9_BH_ikmsSFMRLa47AmMMrsVkYkrz4RGsZbxUxXJFByGM_VtuiEtJNf20ywnF4RMsWF_Hb-Kzq9tV8XOHKI99kCRprC9HrIKOsC4BoU9HBhCK_6YBiIOp2CPwZBvHZhB99fAk1pAkXOdKsdGxYfnSTAsiPllCFiGJCBQkrLOPG1Wuoz7Pe11GlAOdGSwR1s1FMxWq_TMDFTdqEDSwwL6CFIBQmU5JF96WM9-Ly9c4oyPFxDUcWsuk6ZiOXZ0m_m3LkdBfiZCX6feJXGQ0LsOt66rOXZ0mGChTehIOoJ5."
-};
+function notify(title, subtitle, body) {
+    $notification.post(title, subtitle, body);
+}
+
+// 读取 quark_cookie.js 保存的数据
+let savedData = $persistentStore.read(storeKey);
+
+if (!savedData) {
+    notify("❌ 夸克扫描王签到失败", "未找到登录数据", "请先打开「夸克扫描王」App 并进行一次操作（最好点一下签到），让 cookie.js 抓包");
+    $done();
+}
+
+const data = JSON.parse(savedData);
+const headers = data.headers || {};
+
+// 使用抓到的 headers + 我们构造的 body
+const url = "https://scan-order.quark.cn/api/sd6hJds8SIgn/pDChohbxo82nCoIn";
 
 const body = {
     "chid": "d185a0655fcf47abb634fe8ade178ed2",
@@ -27,9 +37,13 @@ const body = {
     "token": "05be6a7280cd82bad207e1d44ab454b9"
 };
 
-$httpClient.post({ url: url, headers: headers, body: JSON.stringify(body) }, (error, response, data) => {
+$httpClient.post({ 
+    url: url, 
+    headers: headers, 
+    body: JSON.stringify(body) 
+}, (error, response, data) => {
     if (error) {
-        $notification.post("夸克扫描王", "❌ 请求失败", error.message || error);
+        notify("❌ 夸克扫描王签到", "网络请求失败", error.message || error);
         $done();
     }
 
@@ -38,12 +52,12 @@ $httpClient.post({ url: url, headers: headers, body: JSON.stringify(body) }, (er
         if (json.code === 0 || json.status === 0) {
             const coin = json.data?.currObtainWelfare?.coin || 0;
             const days = json.data?.contNum || "?";
-            $notification.post("✅ 夸克扫描王签到成功", `获得 ${coin} 金币 | 连续 ${days} 天`, "");
+            notify("✅ 夸克扫描王签到成功", `获得 ${coin} 金币`, `连续签到 ${days} 天`);
         } else {
-            $notification.post("❌ 夸克扫描王签到失败", json.msg || "未知错误", "");
+            notify("❌ 夸克扫描王签到失败", json.msg || "未知错误", data);
         }
     } catch (e) {
-        $notification.post("❌ 夸克扫描王异常", e.message, "");
+        notify("❌ 夸克扫描王解析异常", "", e.message);
     }
     $done();
 });
