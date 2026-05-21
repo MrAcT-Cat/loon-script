@@ -1,5 +1,5 @@
-// Loon 插件：ChatGPT 节点全自动实测筛选
-const GPT_WHITE = new Set([
+// Loon 面板 ChatGPT 全节点解锁批量检测
+const GPT_WHITELIST = new Set([
 "T1","XX","AL","DZ","AD","AO","AG","AR","AM","AU","AT","AZ",
 "BS","BD","BB","BE","BZ","BJ","BT","BA","BW","BR","BG","BF",
 "CV","CA","CL","CO","KM","CR","HR","CY","DK","DJ","DM","DO",
@@ -17,43 +17,29 @@ const GPT_WHITE = new Set([
 ])
 
 async function main() {
-    // 读取订阅全部节点
     const allNodes = $proxies.list();
-    const validList = [];
-    let pass = 0, fail = 0;
+    let valid = 0;
+    let invalid = 0;
 
-    // 逐个节点实测ChatGPT解锁
     for (const node of allNodes) {
         try {
-            const res = await $task.fetch({
+            const resp = await $task.fetch({
                 url: "https://chat.openai.com/cdn-cgi/trace",
-                opts: { policy: node.name, timeout: 3500 }
+                opts: { policy: node.name, timeout: 3000 }
             })
-            const loc = res.body.match(/loc=(\w+)/)?.[1] || "";
-            if (GPT_WHITE.has(loc)) {
-                validList.push(node.name);
-                pass++;
-            } else {
-                fail++;
-            }
+            const loc = resp.body.match(/loc=(\w+)/)?.[1] || "";
+            GPT_WHITELIST.has(loc) ? valid++ : invalid++;
         } catch {
-            fail++;
+            invalid++;
         }
     }
 
-    // 自动新建/更新独立GPT专属策略组
-    $groups.createOrUpdate({
-        name: "✅GPT可用节点池",
-        type: "select",
-        proxies: validList
-    })
-
-    // 弹窗通知结果
-    $notify("GPT节点筛选完成",
-        `总节点: ${allNodes.length} 个`,
-        `✅解锁可用: ${pass} 个 | ❌不可用: ${fail} 个`
+    $notify(
+        "ChatGPT 节点扫描完成 ✅",
+        `总节点数量：${allNodes.length}`,
+        `✅ 可解锁GPT：${valid} 个 | ❌ 不可用：${invalid} 个`
     )
-    $done()
+    $done();
 }
 
 main();
