@@ -1,8 +1,0 @@
-#!name=ChatGPT 节点解锁检测
-#!desc=一键批量扫描全部订阅节点GPT解锁情况
-#!author=MrAcT-Cat
-#!icon=https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/ChatGPT.png
-#!version=1.0
-
-[Panel]
-🔍 一键扫描GPT可用节点 = script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/gpt_node_filter.js
