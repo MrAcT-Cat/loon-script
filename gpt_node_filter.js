@@ -1,4 +1,5 @@
-const WHITE_LIST = new Set([
+// iOS Loon 插件 完美可用版
+const GPT_WHITELIST = new Set([
 "T1","XX","AL","DZ","AD","AO","AG","AR","AM","AU","AT","AZ",
 "BS","BD","BB","BE","BZ","BJ","BT","BA","BW","BR","BG","BF",
 "CV","CA","CL","CO","KM","CR","HR","CY","DK","DJ","DM","DO",
@@ -13,44 +14,37 @@ const WHITE_LIST = new Set([
 "LK","SR","SE","CH","TH","TG","TO","TT","TN","TR","TV","UG",
 "AE","US","UY","VU","ZM","BO","BN","CG","CZ","VA","FM","MD",
 "PS","KR","TW","TZ","TL","GB"
-]);
+])
 
 async function main() {
-    // 获取全部节点
-    const allProxies = $proxies.list();
-    const validProxies = [];
+    // 读取当前正在生效的节点
+    const nowNode = $env.currentPolicy;
 
-    for (const proxy of allProxies) {
-        try {
-            const res = await $task.fetch({
-                url: "https://chat.openai.com/cdn-cgi/trace",
-                opts: {
-                    policy: proxy.name,
-                    timeout: 3000
-                }
-            });
-            const loc = res.body.match(/loc=(\w+)/)?.[1] || "";
-            if (WHITE_LIST.has(loc)) {
-                validProxies.push(proxy.name);
-            }
-        } catch (e) {
-            continue;
-        }
+    if(!nowNode){
+        $notify("⚠️ 运行失败","请先手动选中一个节点","再点击按钮检测")
+        $done()
+        return
     }
 
-    // 自动新建/覆盖 策略组：GPT可用策略
-    $groups.update({
-        name: "GPT可用策略",
-        type: "select",
-        proxies: validProxies
-    });
+    try{
+        const res = await $task.fetch({
+            url:"https://chat.openai.com/cdn-cgi/trace",
+            opts:{policy:nowNode,timeout:4000}
+        })
 
-    $notify(
-        "GPT节点整理完成",
-        `总节点：${allProxies.length} 个`,
-        `筛选可用：${validProxies.length} 个 已存入【GPT可用策略】`
-    );
-    $done();
+        const loc = res.body.match(/loc=(\w+)/)?.[1] || ""
+
+        if(GPT_WHITELIST.has(loc)){
+            $notify("✅ 节点可用｜GPT解锁成功",`节点名称：${nowNode}`,`地区码：${loc}，已支持ChatGPT`)
+        }else{
+            $notify("❌ 节点失效｜GPT无法访问",`节点名称：${nowNode}`,`地区码：${loc}，不在官方白名单`)
+        }
+
+    }catch{
+        $notify("⚠️ 连接超时", "节点延迟过高/被封禁", "请切换其他节点重试")
+    }
+
+    $done()
 }
 
 main();
