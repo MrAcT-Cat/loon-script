@@ -1,4 +1,3 @@
-// iOS Loon 插件 完美可用版
 const GPT_WHITELIST = new Set([
 "T1","XX","AL","DZ","AD","AO","AG","AR","AM","AU","AT","AZ",
 "BS","BD","BB","BE","BZ","BJ","BT","BA","BW","BR","BG","BF",
@@ -14,37 +13,54 @@ const GPT_WHITELIST = new Set([
 "LK","SR","SE","CH","TH","TG","TO","TT","TN","TR","TV","UG",
 "AE","US","UY","VU","ZM","BO","BN","CG","CZ","VA","FM","MD",
 "PS","KR","TW","TZ","TL","GB"
-])
+]);
 
 async function main() {
-    // 读取当前正在生效的节点
     const nowNode = $env.currentPolicy;
 
     if(!nowNode){
-        $notify("⚠️ 运行失败","请先手动选中一个节点","再点击按钮检测")
-        $done()
-        return
+        $notify("⚠️ 运行失败","请先手动选中一个节点","再点击按钮检测");
+        $done();
+        return;
     }
 
-    try{
-        const res = await $task.fetch({
+    try {
+        // 第一步：获取国家码
+        const traceRes = await $task.fetch({
             url:"https://chat.openai.com/cdn-cgi/trace",
-            opts:{policy:nowNode,timeout:4000}
-        })
+            opts:{policy:nowNode, timeout:4000}
+        });
+        const loc = traceRes.body.match(/loc=(\w+)/)?.[1] || "未知";
 
-        const loc = res.body.match(/loc=(\w+)/)?.[1] || ""
+        // 第二步：直接访问 ChatGPT Session 测试
+        let accessMsg = "";
+        try {
+            const apiRes = await $task.fetch({
+                url: "https://chat.openai.com/api/auth/session",
+                opts: {policy: nowNode, timeout: 5000}
+            });
 
-        if(GPT_WHITELIST.has(loc)){
-            $notify("✅ 节点可用｜GPT解锁成功",`节点名称：${nowNode}`,`地区码：${loc}，已支持ChatGPT`)
-        }else{
-            $notify("❌ 节点失效｜GPT无法访问",`节点名称：${nowNode}`,`地区码：${loc}，不在官方白名单`)
+            if(apiRes.statusCode === 200 && apiRes.body.includes("user")){
+                accessMsg = "✅ 接口可访问｜ChatGPT正常";
+            } else {
+                accessMsg = "❌ 接口受限｜可能需要翻墙或节点被封";
+            }
+        } catch {
+            accessMsg = "⚠️ 接口无法访问｜节点延迟过高或被封";
         }
 
-    }catch{
-        $notify("⚠️ 连接超时", "节点延迟过高/被封禁", "请切换其他节点重试")
+        // 第三步：结合国家码判断
+        if(GPT_WHITELIST.has(loc)){
+            $notify("节点检测结果", `节点名称：${nowNode}`, `地区码：${loc}（白名单）\n${accessMsg}`);
+        } else {
+            $notify("节点检测结果", `节点名称：${nowNode}`, `地区码：${loc}（不在白名单）\n${accessMsg}`);
+        }
+
+    } catch {
+        $notify("⚠️ 连接失败", "节点延迟过高/被封禁", "请切换其他节点重试");
     }
 
-    $done()
+    $done();
 }
 
 main();
