@@ -16,50 +16,48 @@ const GPT_WHITELIST = new Set([
 ]);
 
 async function main() {
-    const nowNode = $env.currentPolicy;
-
-    if(!nowNode){
-        $notify("⚠️ 运行失败","请先手动选中一个节点","再点击按钮检测");
+    const policies = $env.policyGroupList || [];
+    if(policies.length === 0){
+        $notify("⚠️ 扫描失败","没有找到订阅节点","请确认已添加节点或策略组");
         $done();
         return;
     }
 
-    try {
-        // 第一步：获取国家码
-        const traceRes = await $task.fetch({
-            url:"https://chat.openai.com/cdn-cgi/trace",
-            opts:{policy:nowNode, timeout:4000}
-        });
-        const loc = traceRes.body.match(/loc=(\w+)/)?.[1] || "未知";
+    let results = [];
 
-        // 第二步：直接访问 ChatGPT Session 测试
-        let accessMsg = "";
-        try {
-            const apiRes = await $task.fetch({
-                url: "https://chat.openai.com/api/auth/session",
-                opts: {policy: nowNode, timeout: 5000}
+    for(const node of policies){
+        try{
+            const traceRes = await $task.fetch({
+                url:"https://chat.openai.com/cdn-cgi/trace",
+                opts:{policy:node, timeout:4000}
             });
+            const loc = traceRes.body.match(/loc=(\w+)/)?.[1] || "未知";
 
-            if(apiRes.statusCode === 200 && apiRes.body.includes("user")){
-                accessMsg = "✅ 接口可访问｜ChatGPT正常";
-            } else {
-                accessMsg = "❌ 接口受限｜可能需要翻墙或节点被封";
+            let accessMsg = "";
+            try{
+                const apiRes = await $task.fetch({
+                    url: "https://chat.openai.com/api/auth/session",
+                    opts:{policy:node, timeout:5000}
+                });
+                if(apiRes.statusCode === 200 && apiRes.body.includes("user")){
+                    accessMsg = "✅ 可访问";
+                } else {
+                    accessMsg = "❌ 受限";
+                }
+            }catch{
+                accessMsg = "⚠️ 无法访问";
             }
-        } catch {
-            accessMsg = "⚠️ 接口无法访问｜节点延迟过高或被封";
-        }
 
-        // 第三步：结合国家码判断
-        if(GPT_WHITELIST.has(loc)){
-            $notify("节点检测结果", `节点名称：${nowNode}`, `地区码：${loc}（白名单）\n${accessMsg}`);
-        } else {
-            $notify("节点检测结果", `节点名称：${nowNode}`, `地区码：${loc}（不在白名单）\n${accessMsg}`);
+            results.push(`${node} | ${loc} | ${GPT_WHITELIST.has(loc) ? "白名单" : "非白名单"} | ${accessMsg}`);
+        }catch{
+            results.push(`${node} | ❌ 节点检测失败`);
         }
-
-    } catch {
-        $notify("⚠️ 连接失败", "节点延迟过高/被封禁", "请切换其他节点重试");
     }
 
+    // 按可用性排序，优先显示可访问节点
+    results.sort((a,b) => (a.includes("✅") ? -1 : 1));
+
+    $notify("GPT节点扫描完成", `共扫描 ${policies.length} 个节点`, results.join("\n"));
     $done();
 }
 
