@@ -1,0 +1,12 @@
+#!name=ChatGPT 节点自动筛选
+#!desc=一键实测全订阅节点，自动归集GPT解锁节点到独立策略组
+#!author=MrAcT-Cat
+#!icon=https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/ChatGPT.png
+#!system=loon
+#!version=1.0
+
+[Script]
+GPT一键全量筛选 = type=event-interaction,script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/gpt_node_filter.js
+
+[Panel]
+🔍 刷新GPT可用节点 = script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/gpt_node_filter.js,icon=https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/ChatGPT.png
