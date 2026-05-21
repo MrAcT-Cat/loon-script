@@ -1,44 +1,39 @@
-// ================= ChatGPT 节点筛选 Remote Filter =================
-const BASE_URL_GPT = 'https://chat.openai.com/';
-const REGION_URL_GPT = 'https://chat.openai.com/cdn-cgi/trace';
-const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36';
-const SUPPORT_COUNTRIES = ["US","JP","KR","SG","HK","TW","GB","CA","AU","DE","FR","TH","MY"];
+// Loon 节点过滤：只保留 ChatGPT 官方白名单地区
+// 仓库路径：Scripts/loon/gpt_filter.js
 
-// 订阅链接（替换成你的节点订阅链接）
-const SUBSCRIBE_URL = "https://你的订阅链接.com/subscribe.txt";
+const WHITE_LIST = new Set([
+    "T1","XX","AL","DZ","AD","AO","AG","AR","AM","AU","AT","AZ",
+    "BS","BD","BB","BE","BZ","BJ","BT","BA","BW","BR","BG","BF",
+    "CV","CA","CL","CO","KM","CR","HR","CY","DK","DJ","DM","DO",
+    "EC","SV","EE","FJ","FI","FR","GA","GM","GE","DE","GH","GR",
+    "GD","GT","GN","GW","GY","HT","HN","HU","IS","IN","ID","IQ",
+    "IE","IL","IT","JM","JP","JO","KZ","KE","KI","KW","KG","LV",
+    "LB","LS","LR","LI","LT","LU","MG","MW","MY","MV","ML","MT",
+    "MH","MR","MU","MX","MC","MN","ME","MA","MZ","MM","NA","NR",
+    "NP","NL","NZ","NI","NE","NG","MK","NO","OM","PK","PW","PA",
+    "PG","PE","PH","PL","PT","QA","RO","RW","KN","LC","VC","WS",
+    "SM","ST","SN","RS","SC","SL","SG","SK","SI","SB","ZA","ES",
+    "LK","SR","SE","CH","TH","TG","TO","TT","TN","TR","TV","UG",
+    "AE","US","UY","VU","ZM","BO","BN","CG","CZ","VA","FM","MD",
+    "PS","KR","TW","TZ","TL","GB"
+]);
 
-// 主逻辑
-(async () => {
+// Loon 固定入口：async function filter(node)
+async function filter(node) {
+    const opts = {
+        policy: node.name,
+        timeout: 3000
+    };
+
     try {
-        // 1️⃣ 获取订阅节点列表
-        const subRes = await $task.fetch(SUBSCRIBE_URL);
-        const subTxt = atob(subRes.body.trim());
-        const nodes = subTxt.split("\n").map(line => ({name: line.trim(), opts: {proxy: line.trim()}}));
+        const res = await $task.fetch({
+            url: "https://chat.openai.com/cdn-cgi/trace",
+            opts: opts
+        });
 
-        const usableNodes = [];
-
-        // 2️⃣ 循环测试每个节点
-        for (const node of nodes) {
-            try {
-                // 测试 ChatGPT 首页访问
-                const resp = await $task.fetch({url: BASE_URL_GPT, opts: node.opts, timeout: 3000, headers: {"User-Agent": UA}});
-                if (JSON.stringify(resp).indexOf("text/plain") === -1) {
-                    // 获取地区
-                    const regionResp = await $task.fetch({url: REGION_URL_GPT, opts: node.opts, timeout: 3000, headers: {"User-Agent": UA}});
-                    const region = regionResp.body.split("loc=")[1].split("\n")[0];
-                    if (SUPPORT_COUNTRIES.includes(region)) {
-                        usableNodes.push(node.name); // 可用节点
-                    }
-                }
-            } catch (e) {
-                // 忽略连接失败或超时节点
-            }
-        }
-
-        // 3️⃣ 输出最终可用节点列表（每行一个节点）
-        resolve(usableNodes.join("\n"));
-
-    } catch (err) {
-        resolve(""); // 如果订阅拉取失败，输出空列表
+        const loc = res.body.match(/loc=(\w+)/)?.[1] || "";
+        return WHITE_LIST.has(loc);
+    } catch (e) {
+        return false; // 超时/失败 直接剔除
     }
-})();
+}
