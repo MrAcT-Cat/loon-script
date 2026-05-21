@@ -1,0 +1,32 @@
+// ChatGPT Remote Filter 脚本
+const BASE_URL_GPT = 'https://chat.openai.com/';
+const REGION_URL_GPT = 'https://chat.openai.com/cdn-cgi/trace';
+const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36';
+const support_countryCodes = ["US","JP","KR","SG","HK","TW","GB","CA","AU","DE","FR","TH","MY"];
+
+const SUBSCRIBE_URL = "https://你的订阅链接.com/subscribe.txt"; // 订阅 URL
+
+// ---------------- 主函数 ----------------
+async function main() {
+    const res = await $task.fetch(SUBSCRIBE_URL);
+    const txt = atob(res.body.trim());
+    const nodes = txt.split("\n").map(line => ({name: line, opts:{proxy: line}}));
+
+    const results = [];
+    for (let node of nodes) {
+        try {
+            const resp = await $task.fetch({url: BASE_URL_GPT, opts: node.opts, timeout: 3000, headers: {"User-Agent": UA}});
+            if (JSON.stringify(resp).indexOf("text/plain") === -1) {
+                const regionResp = await $task.fetch({url: REGION_URL_GPT, opts: node.opts, timeout: 3000, headers: {"User-Agent": UA}});
+                const region = regionResp.body.split("loc=")[1].split("\n")[0];
+                if (support_countryCodes.includes(region)) {
+                    results.push(node.name); // 可用节点保留
+                }
+            }
+        } catch(e) { /* 忽略失败节点 */ }
+    }
+    // 输出最终可用节点列表
+    resolve(results.join("\n"));
+}
+
+main();
