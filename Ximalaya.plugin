@@ -1,0 +1,22 @@
+#!name=喜马拉雅会员增强
+#!desc=会员解锁/大师课/音质音效/下载/去广告
+#!author=GieGie
+#!system=loon
+#!version=1.0
+
+[Rewrite]
+
+^https?:\/\/.+((ximalaya)|(xmcdn)).+(mobile-user\/v2\/homePage|product\/detail\/v1|v1\/album\/track\/ts|mobile-playpage\/track\/v4\/baseInfo\/ts|mobile-playpage\/playpage\/tabs\/v2|mobile-playpage\/playpage\/track\/qualityAndEffect|mobile\/download\/v2\/track|mobile-user-grade\/decoratorV2\/decorationDetails\/page|mobile-album\/album\/plant\/grass) script-response-body https://raw.githubusercontent.com/WeiGiegie/666/main/ximalaya.js
+
+^https?://passport\.ximalaya\.com/friendship-mobile/v1/findFriendsBanner/show/ reject
+^https?://xdcs-collector\.ximalaya\.com/api/v1/realtime reject
+^https?://adse\.wsa\.ximalaya\.com reject
+^https?://adse\.ximalaya\.com reject
+^https?://ad\.ximalaya\.com reject
+^https?://ulogs\.umeng\.com\/unify_logs reject
+^https?://.+ximalaya\.com/x-web-activity/signIn/getHomePageSignInInfo/ reject-200
+^https?://.+ximalaya\.com/product/promotion/v1/album/price reject-200
+^https?://mobile\.ximalaya\.com/business-sale-promotion-guide-mobile-web/popup/info/ reject
+
+[MITM]
+hostname = %APPEND% *.ximalaya.com,*.xmcdn.com,mobile.ximalaya.com,m.ximalaya.com,passport.ximalaya.com,adse.ximalaya.com,ulogs.umeng.com
