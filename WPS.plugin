@@ -12,7 +12,6 @@ arg2 = switch,true,tag=WPS'token
 arg3 = input,"0 10 * * *",tag=WPS定时
 arg4 = policy,PROXY,tag=PROXY
 
-# 补充分流规则（PingMe原版必备，保证policy正常渲染）
 [Rule]
 DOMAIN, personal-act.wps.cn, {arg4}
 
