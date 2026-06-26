@@ -1,26 +1,25 @@
-#!name=WPS解锁与签到
-#!desc=获取WPS会员Cookie并执行自动签到任务。可视化开关面板，可控制任务、Token抓取、自定义签到定时
-#!author=MaYIHEI
-#!homepage=https://github.com/MaYIHEI/paperclip
-#!date=2026-06-26 16:55:00
-#!min_version=3.2.4(787)
+#!name = WPS解锁与签到
+#!desc = 获取WPS会员Cookie并执行自动签到任务，可视化开关面板，控制签到任务、Cookie抓取、自定义签到定时
+#!date = 2026-06-26
+#!author = MaYIHEI
+#!homepage = https://github.com/MaYIHEI/paperclip
+#!icon = https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png
+#!loon_version = 3.2.4(787)
 
-# ========== PingMe同款可视化变量（稳定显示开关/输入/策略选择） ==========
-# 开关1：WPS签到任务
-wps_task_switch = bool,true,tag=WPS签到任务
-# 开关2：WPS Cookie抓取开关
-wps_token_switch = bool,true,tag=WPS'token
-# 自定义定时输入框
-wps_cron_time = text,0 10 * * *,tag=WPS定时,desc=Cron格式：分 时 日 月 周
-# 代理策略选择下拉
-wps_proxy_policy = policy,PROXY,tag=PROXY,desc=插件脚本请求使用的代理策略
+[Argument]
+# 1.签到总任务开关
+arg1 = switch,true,tag=WPS签到任务
+# 2.Cookie抓取开关（对应你截图WPS'token）
+arg2 = switch,true,tag=WPS'token
+# 3.自定义定时输入框
+arg3 = input,"0 10 * * *",tag=WPS定时
+
+[Script]
+# Cookie抓取拦截脚本，绑定arg2开关
+http-request ^https:\/\/personal-act\.wps\.cn\/activity-rubik\/activity\/page_info,script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.cookie.js,requires-body=false,img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png,enable={arg2},tag=WPS Cookie抓取
+
+# 定时签到脚本，绑定arg1开关 + arg3自定义cron时间
+cron {arg3} script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.js,img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png,enable={arg1},tag=WPS自动签到
 
 [MITM]
 hostname = personal-act.wps.cn
-
-[Script]
-# Cookie抓取脚本，绑定Token开关
-http-request ^https:\/\/personal-act\.wps\.cn\/activity-rubik\/activity\/page_info,tag=WPS Cookie,script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.cookie.js,requires-body=false,img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png,enable={{wps_token_switch}},argument=[{{wps_proxy_policy}}]
-
-# 定时签到脚本，绑定任务开关+自定义定时
-cron {{wps_cron_time}},script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps.js,tag=WPS签到,img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png,enable={{wps_task_switch}},argument=[{{wps_proxy_policy}}]
