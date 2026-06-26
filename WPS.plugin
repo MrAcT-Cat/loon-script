@@ -4,81 +4,14 @@
 #!homepage=https://github.com/MaYIHEI/paperclip
 #!date=2026-06-26 16:55:00
 #!min_version=3.2.4(787)
+#!ui_setting=[{"title":"设置","items":[{"key":"wps_task_switch","label":"WPS签到任务","type":"switch","default":true},{"key":"wps_token_switch","label":"WPS'token","type":"switch","default":true},{"key":"wps_cron_time","label":"WPS定时","type":"input","default":"0 10 * * *","desc":"Cron：分 时 日 月 周"}]},{"title":"代理指向的策略","items":[{"key":"wps_proxy_policy","label":"PROXY","type":"policy","default":"PROXY","desc":"脚本网络请求代理分组"}]},{"title":"主机名","items":[{"key":"wps_mitm_host","label":"MITM域名","type":"label","default":"personal-act.wps.cn"}]}]
 
-# ========== 可视化UI配置（和截图PingMe面板一致） ==========
-# 分组1：功能开关（任务开关、Token开关）
-# 分组2：定时输入框（自定义Cron时间）
-# 分组3：代理策略选择
-# 分组4：MITM主机只读展示
-#!ui_setting=[
-    {
-        "title":"设置",
-        "items":[
-            {
-                "key":"wps_task_switch",
-                "label":"WPS签到任务",
-                "type":"switch",
-                "default":true
-            },
-            {
-                "key":"wps_token_switch",
-                "label":"WPS'token",
-                "type":"switch",
-                "default":true
-            },
-            {
-                "key":"wps_cron_time",
-                "label":"WPS定时",
-                "type":"input",
-                "default":"0 10 * * *",
-                "desc":"Cron定时表达式，分 时 日 月 周"
-            }
-        ]
-    },
-    {
-        "title":"代理指向的策略",
-        "items":[
-            {
-                "key":"wps_proxy_policy",
-                "label":"PROXY",
-                "type":"policy",
-                "default":"PROXY",
-                "desc":"插件脚本网络请求使用的代理策略"
-            }
-        ]
-    },
-    {
-        "title":"主机名",
-        "items":[
-            {
-                "key":"wps_mitm_host",
-                "label":"MITM域名",
-                "type":"label",
-                "default":"personal-act.wps.cn"
-            }
-        ]
-    }
-]
-
-# ========== MITM劫持配置 ==========
 [MITM]
 hostname = personal-act.wps.cn
 
-# ========== 脚本规则（绑定UI开关参数控制启停） ==========
 [Script]
-# 1. WPS Cookie抓取脚本：受WPS'token开关控制
-http-request ^https:\/\/personal-act\.wps\.cn\/activity-rubik\/activity\/page_info 
-tag=WPS Cookie, 
-script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.cookie.js, 
-requires-body=false, 
-img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png,
-enable={{wps_token_switch}},
-argument=[{{wps_proxy_policy}}]
+# 抓取Cookie（Token开关控制启停）
+http-request ^https:\/\/personal-act\.wps\.cn\/activity-rubik\/activity\/page_info,tag=WPS Cookie,script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.cookie.js,requires-body=false,img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png,enable={{wps_token_switch}},argument=[{{wps_proxy_policy}}]
 
-# 2. WPS定时签到脚本：受签到任务开关 + UI自定义Cron控制
-cron "{{wps_cron_time}}" 
-script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.js, 
-tag=WPS签到, 
-img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png, 
-enable={{wps_task_switch}},
-argument=[{{wps_proxy_policy}}]
+# 定时签到（任务开关+自定义Cron）
+cron {{wps_cron_time}},script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.js,tag=WPS签到,img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png,enable={{wps_task_switch}},argument=[{{wps_proxy_policy}}]
