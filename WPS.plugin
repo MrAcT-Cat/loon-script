@@ -12,13 +12,12 @@ arg2 = switch,true,tag=WPS'token
 arg3 = input,"0 10 * * *",tag=WPS定时
 arg4 = policy,PROXY,tag=PROXY
 
-# Rule段统一写固定PROXY（插件自动绑定arg4选中策略）
 [Rule]
 DOMAIN, personal-act.wps.cn, PROXY
 
 [Script]
-cron {arg3} script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.js, timeout=600, enable = {arg1}, tag=WPS签到任务, argument = {arg4}
-http-request ^https:\/\/personal-act\.wps\.cn\/activity-rubik\/activity\/page_info script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.cookie.js,requires-body=false,img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png, timeout=300, enable = {arg2}, tag=WPS (token）, argument = {arg4}
+cron {arg3} script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.js, timeout=600, enable = {arg1}, tag=WPS签到任务, img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png, argument = {arg4}
+http-request ^https:\/\/personal-act\.wps\.cn\/activity-rubik\/activity\/page_info script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.cookie.js,requires-body=false, timeout=300, enable = {arg2}, tag=WPS (token）, img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png, argument = {arg4}
 
 [MITM]
 hostname = personal-act.wps.cn
