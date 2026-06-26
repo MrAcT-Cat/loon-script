@@ -18,3 +18,5 @@ hostname = mobwsa.ximalaya.com, mobile.ximalaya.com, apisg.himalaya.com, 36.150.
 ^https?://.+ximalaya\.com/x-web-activity/signIn/getHomePageSignInInfo/ url reject-200
 ^https?://.+ximalaya\.com/product/promotion/v1/album/price url reject-200
 ^https?://mobile\.ximalaya\.com/business-sale-promotion-guide-mobile-web/popup/info/ url reject
+[Script]
+ximalaya_remote = type=script-response-body, script-path=https://raw.githubusercontent.com/WeiGiegie/666/main/ximalaya.js, requires-body=true
