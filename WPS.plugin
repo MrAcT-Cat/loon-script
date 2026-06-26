@@ -1,5 +1,5 @@
 #!name = WPS解锁与签到
-#!desc = 获取WPS会员Cookie并执行自动签到任务，可视化开关面板，控制签到任务、Cookie抓取、自定义签到定时
+#!desc = 获取WPS会员Cookie并执行自动签到任务，可视化开关面板，控制签到任务、Cookie抓取、自定义签到定时，支持插件内切换代理策略
 #!date = 2026-06-26
 #!author = MaYIHEI
 #!homepage = https://github.com/MaYIHEI/paperclip
@@ -10,12 +10,15 @@
 arg1 = switch,true,tag=WPS签到任务
 arg2 = switch,true,tag=WPS'token
 arg3 = input,"0 10 * * *",tag=WPS定时
+arg4 = policy,PROXY,tag=PROXY
 
+# Rule段统一写固定PROXY（插件自动绑定arg4选中策略）
 [Rule]
 DOMAIN, personal-act.wps.cn, PROXY
 
 [Script]
-cron {arg3} script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.js, timeout=600, enable = {arg1}, tag=WPS签到任务
-http-request ^https:\/\/personal-act\.wps\.cn\/activity-rubik\/activity\/page_info script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.cookie.js,requires-body=false,img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png, timeout=300, enable = {arg2}, tag=WPS (token）
+cron {arg3} script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.js, timeout=600, enable = {arg1}, tag=WPS签到任务, argument = {arg4}
+http-request ^https:\/\/personal-act\.wps\.cn\/activity-rubik\/activity\/page_info script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.cookie.js,requires-body=false,img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png, timeout=300, enable = {arg2}, tag=WPS (token）, argument = {arg4}
+
 [MITM]
 hostname = personal-act.wps.cn
