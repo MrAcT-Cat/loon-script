@@ -1,3 +1,9 @@
+#!name=喜马拉雅解锁
+#!desc=解锁喜马拉雅VIP功能并拦截广告。此脚本仅供学习与交流，请在下载使用24小时内删除！请勿在中国大陆转载与贩卖！
+#!author=@GieGie777
+#!homepage=https://t.me/GieGie777
+#!date=2026-06-26 16:45:00
+
 [Rewrite]
 ^https?://passport\.ximalaya\.com/friendship-mobile/v1/findFriendsBanner/show/ reject
 ^https?://xdcs-collector\.ximalaya\.com/api/v1/realtime reject
