@@ -16,9 +16,7 @@ arg4 = policy,PROXY,tag=PROXY
 DOMAIN, personal-act.wps.cn, {arg4}
 
 [Script]
-http-request ^https:\/\/personal-act\.wps\.cn\/activity-rubik\/activity\/page_info script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.cookie.js,requires-body=false,img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png,enable={arg2},tag=WPS Cookie抓取,argument={arg4}
-
-cron {arg3} script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.js,img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png,enable={arg1},tag=WPS自动签到,argument={arg4}
-
+cron {arg3} script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.js, timeout=600, enable = {arg1}, tag=WPS签到任务
+http-request ^https:\/\/personal-act\.wps\.cn\/activity-rubik\/activity\/page_info script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.cookie.js,requires-body=false,img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png, timeout=300, enable = {arg2}, tag=WPS (token）
 [MITM]
 hostname = personal-act.wps.cn
