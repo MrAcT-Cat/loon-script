@@ -1,10 +1,10 @@
-#!desc=屏蔽 zhaojiafangAPP开屏广告
+#!desc=屏蔽找家房APP开屏广告（修复闪退）
 #!author=Custom
 #!date=2026-06-30
 
 [Rewrite]
-^http://api-pl-mobile\.zhaojiafang\.com/api/adv/adv_list mock-response-body data-type=json data="[]" status-code=200
-^https://qiniu\.zhaojiafang\.com/data/upload/shop/adv/ reject-img
+^https?://api-pl-mobile\.zhaojiafang\.com/api/adv/adv_list reject-array
+^https://qiniu.zhaojiafang\.com/data/upload/shop/adv/ reject-img
 
 [MITM]
 hostname = api-pl-mobile.zhaojiafang.com, qiniu.zhaojiafang.com
