@@ -1,11 +1,11 @@
-#!desc=屏蔽找家房APP开屏广告（防闪退稳定版）
+#!desc=屏蔽找家房开屏广告 防闪退纯净版
 #!author=Custom
 #!date=2026-06-30
 
 [Rewrite]
-# 拦截广告列表接口，直接断开请求，不篡改返回内容
+# 广告接口直接断开，不篡改响应
 ^https?://api-pl-mobile\.zhaojiafang\.com/api/adv/adv_list reject
-# 广告图片返回1px空白透明图，无裂图占位
+# 广告图片替换空白1px图
 ^https://qiniu\.zhaojiafang\.com/data/upload/shop/adv/ reject-img
 
 [MITM]
