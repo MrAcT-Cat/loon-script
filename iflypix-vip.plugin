@@ -14,7 +14,7 @@ let body = $response.body;
 try {
     let json = JSON.parse(body);
     if (json.code === 0 && json.data) {
-        json.data.accountLevel = 3;
+        json.data.accountLevel = 1;
         json.data.vipEndTime = "2027-12-31 23:59:59";
     }
     $done({ body: JSON.stringify(json) });
