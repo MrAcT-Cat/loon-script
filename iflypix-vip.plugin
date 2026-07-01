@@ -1,0 +1,23 @@
+#!name=Pix VIP解锁
+#!desc=修改会员等级为3，VIP到期2027-12-31
+#!author=Self
+#!tag=VIP
+
+[MITM]
+hostname = cn.iflypix.com
+
+[Script]
+http-response ^https://cn\.iflypix\.com/api/user/user/info script-path=*,requires-body=true
+
+//@script
+let body = $response.body;
+try {
+    const obj = JSON.parse(body);
+    if (obj) {
+        obj.accountLevel = 3;
+        obj.vipEndTime = "2027-12-31 23:59:59";
+    }
+    $done({ body: JSON.stringify(obj) });
+} catch (e) {
+    $done({ body });
+}
