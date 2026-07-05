@@ -1,0 +1,37 @@
+#!name=瑞佳商城弹窗屏蔽
+#!desc=拦截公告弹窗接口，强制关闭弹窗，清空广告图片，支持插件内开关控制
+#!author=Custom
+#!tag=去广告,弹窗拦截
+#!loon_version=3.5.0(969)
+#!type=normal
+
+# 插件UI开关参数，符合你给的[Argument]规范
+[Argument]
+switch_popup = switch,true,tag=屏蔽商城弹窗,desc=开启后强制关闭公告弹窗广告
+
+# MITM劫持域名，解密http/https响应
+[mitm]
+hostname = ww.ruijiadashop.cn
+
+# 脚本匹配规则，绑定本地脚本、开关、参数
+[script]
+http-response ^http://ww\.ruijiadashop\.cn/ script-path=popup_block.js,requires-body=true,tag=弹窗拦截脚本,enable={switch_popup},argument=[{switch_popup}]
+
+# Local内勤内嵌脚本区块，无需外部文件
+[local]
+popup_block.js = (()=>{
+    // 读取插件UI开关参数（演示$argument用法）
+    const isBlock = $argument.switch_popup;
+    if(!isBlock) return $done({body:$response.body});
+
+    // 解析接口返回JSON
+    let respData = JSON.parse($response.body);
+    // 关闭弹窗标识
+    respData.data.is_close = 0;
+    // 清空弹窗图片内容
+    respData.data.content = "<p></p>";
+    respData.data.activa_content = "<p></p>";
+
+    // 返回修改后的响应体
+    $done({body: JSON.stringify(respData)});
+})();
