@@ -1,16 +1,12 @@
-#name=启动广告拦截
-#desc=修改启动广告接口返回，跳过倒计时并清空内容
-#author=自定义
-#date=2026-07-05
+#!desc=屏蔽启动广告（拒绝接口+图片）
+#!author=Custom
+#!date=2026-07-05
 
 [Rewrite]
-# 无需额外Rewrite，脚本直接修改响应
-
-[Script]
-http-response ^https?:\\/\\/gdey\\.ruijiadashop\\.cn\\/api\\/card\\/getNotice script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/notice_modify.js, requires-body=true, timeout=10, tag=启动广告修改
-
-# 同时屏蔽广告图片域名（可选）
-^https?:\\/\\/ww\\.ruijiadashop\\.cn\\/.* reject
+# 广告接口直接断开，返回空响应（防止app报错）
+^http://gdey\.ruijiadashop\.cn/api/card/getNotice reject-200
+# 广告图片域名全部拒绝（替换为空白图，防止图片加载失败）
+^https?://ww\.ruijiadashop\.cn/.* reject-img
 
 [MITM]
 hostname = gdey.ruijiadashop.cn, ww.ruijiadashop.cn
