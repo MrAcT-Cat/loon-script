@@ -1,9 +1,16 @@
+#name=启动广告拦截
+#desc=修改启动广告接口返回，跳过倒计时并清空内容
+#author=自定义
+#date=2026-07-05
+
 [Rewrite]
-^http://gdey\.ruijiadashop\.cn/api/card/getNotice url-script=notice_modify.js
-^https?://ww\.ruijiadashop\.cn/.* reject
+# 无需额外Rewrite，脚本直接修改响应
 
 [Script]
-notice_modify.js = type=http-response, pattern=^http://gdey\.ruijiadashop\.cn/api/card/getNotice, script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/notice_modify.js, requires-body=true, timeout=10, tag=启动广告修改
+http-response ^https?:\\/\\/gdey\\.ruijiadashop\\.cn\\/api\\/card\\/getNotice script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/notice_modify.js, requires-body=true, timeout=10, tag=启动广告修改
+
+# 同时屏蔽广告图片域名（可选）
+^https?:\\/\\/ww\\.ruijiadashop\\.cn\\/.* reject
 
 [MITM]
 hostname = gdey.ruijiadashop.cn, ww.ruijiadashop.cn
