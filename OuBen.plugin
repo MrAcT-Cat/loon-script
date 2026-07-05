@@ -4,8 +4,8 @@
 #!date=2026-07-05
 
 [Rewrite]
-# 弹窗公告接口直接断开，不篡改响应
-^http://gdey\.ruijiadashop\.cn/api/card/getNotice reject
+# 精准匹配公告接口，定点修改JSON字段data.is_close为0
+^http://gdey\.ruijiadashop\.cn/api/card/getNotice response-body-json-replace data.is_close 0
 
 [MITM]
 hostname = gdey.ruijiadashop.cn
