@@ -1,11 +1,10 @@
-#!name=瑞佳商城弹窗屏蔽
-#!desc=屏蔽商城公告弹窗 防闪退纯净版
 #!author=Custom
 #!date=2026-07-05
 
 [Rewrite]
-# 精准匹配公告接口，定点修改JSON字段data.is_close为0
-^http://gdey\.ruijiadashop\.cn/api/card/getNotice response-body-json-replace data.is_close 0
 
 [MITM]
 hostname = gdey.ruijiadashop.cn
+
+[Script]
+http-response ^http://gdey\.ruijiadashop\.cn/api/card/getNotice script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/ruijia_notice.js, requires-body=true, timeout=10, tag=瑞佳商城弹窗屏蔽
