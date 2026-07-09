@@ -25,3 +25,4 @@ timeout=300,tag=QX2Loon：QX转Loon解析器
 
 [MITM]
 hostname = qx2loon.hub,*.qx2loon.hub
+
