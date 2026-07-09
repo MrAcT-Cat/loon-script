@@ -1,0 +1,15 @@
+#!name=ShortcutStudio
+#!desc=ShortcutStudio
+#!icon=https://github.com/Toperlock/Quantumult/raw/main/icon/Naruto/Naruto-1006.png
+
+[Script]
+http-request ^https:\/\/api\.shortcutstudio\.app\/generate(?:[/?#]|$) script-path=https://raw.githubusercontent.com/Yu9191/shortcutstudio-rewrite/refs/heads/baby/dist/request.js, requires-body=true, timeout=60, tag=request
+
+http-request ^https:\/\/api\.shortcutstudio\.app\/users\/me\/limits(?:[/?#]|$) script-path=https://raw.githubusercontent.com/Yu9191/shortcutstudio-rewrite/refs/heads/baby/dist/request.js, timeout=60, tag=request
+
+http-request ^https:\/\/api\.shortcutstudio\.app\/sign(?:[/?#]|$) script-path=https://raw.githubusercontent.com/Yu9191/shortcutstudio-rewrite/refs/heads/baby/dist/request.js, timeout=60, tag=request
+
+http-response ^https:\/\/api\.shortcutstudio\.app\/users\/me\/limits(?:[/?#]|$) script-path=https://raw.githubusercontent.com/Yu9191/shortcutstudio-rewrite/refs/heads/baby/dist/response.js, requires-body=true, timeout=60, tag=response
+
+[MITM]
+hostname = api.shortcutstudio.app
