@@ -4,6 +4,7 @@
 #!tag=工具
 #!openurl=https://qx2loon.hub/
 #!icon=https://raw.githubusercontent.com/Script-Hub-Org/Script-Hub/main/assets/icon-dark.png
+#!select=插件代理策略, 默认代理, 自选策略
 #!select=通知开关, 开启通知, 关闭通知
 #!input=Parser_http_timeout
 
@@ -11,15 +12,15 @@
 force-http-engine-hosts = qx2loon.hub, *.qx2loon.hub
 
 [Rule]
-# 不需要外网代理，本地劫持即可
-DOMAIN,qx2loon.hub,DIRECT
+# 只让GitHub资源走代理，本地劫持域名不写Rule，和原版Script Hub一致
+DOMAIN,raw.githubusercontent.com,PROXY
 
 [Script]
-# 首页前端页面（对标script-hub.js）
-http-request ^https?:\/\/qx2loon\.hub\/($|index) script-path=你的github地址/qx2loon-front.js, timeout=300, tag=QX2Loon: 前端页面
+# 首页前端页面（替换成你自己GitHub的raw地址）
+http-request ^https?:\/\/qx2loon\.hub\/($|index) script-path=https://raw.githubusercontent.com/你的用户名/你的仓库名/main/qx2loon-front.js, timeout=300, tag=QX2Loon: 前端页面
 
-# 转换接口（对标Rewrite-Parser.js）
-http-request ^https?:\/\/qx2loon\.hub\/convert\/ script-path=你的github地址/qx2loon-parser.js, timeout=300, tag=QX2Loon: QX转Loon解析器
+# 转换接口
+http-request ^https?:\/\/qx2loon\.hub\/convert\/ script-path=https://raw.githubusercontent.com/你的用户名/你的仓库名/main/qx2loon-parser.js, timeout=300, tag=QX2Loon: QX转Loon解析器
 
 [MITM]
 hostname = qx2loon.hub, *.qx2loon.hub
