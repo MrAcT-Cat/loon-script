@@ -1,0 +1,12 @@
+#!name=Dive VIP解锁
+#!desc=解锁Dive会员相关权限
+#!author=convert
+#!version=1.0
+#!system=ios
+#!category=VIP解锁
+
+[MITM]
+hostname = api.diveplus.cn
+
+[Script]
+http-response ^https://api\.diveplus\.cn/1\.1/functions/App\.GetUserInfo script-path=https://raw.githubusercontent.com/liul0ng/quanx/refs/heads/main/dive.js, requires-body=true
