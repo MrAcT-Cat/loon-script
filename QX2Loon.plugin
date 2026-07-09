@@ -15,13 +15,9 @@ force-http-engine-hosts = qx2loon.hub,*.qx2loon.hub
 DOMAIN,raw.githubusercontent.com,PROXY
 
 [Script]
-http-request ^https?:\/\/qx2loon\.hub\/($|index)
-script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/qx2loon-front.js,
-timeout=300,tag=QX2Loon：前端页面
+http-request ^https?:\/\/qx2loon\.hub\/($|index)script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/qx2loon-front.js,timeout=300,tag=QX2Loon：前端页面
 
-http-request ^https?:\/\/qx2loon\.hub\/convert\/
-script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/qx2loon-parser.js,
-timeout=300,tag=QX2Loon：QX转Loon解析器
+http-request ^https?:\/\/qx2loon\.hub\/convert\/script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/qx2loon-parser.js,timeout=300,tag=QX2Loon：QX转Loon解析器
 
 [MITM]
 hostname = qx2loon.hub,*.qx2loon.hub
