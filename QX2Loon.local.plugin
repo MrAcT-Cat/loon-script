@@ -1,0 +1,113 @@
+#!name=QX2Loon本地转换器
+#!desc=对标Script.Hub，安装插件后访问 qx2loon.local 使用
+#!version=1.0
+#!system=ios
+#!category=工具
+#!author=Self
+
+[MITM]
+hostname = qx2loon.local
+
+[Script]
+http-request ^http://qx2loon.local script=
+(async function() {
+    // 内置完整转换HTML页面
+    const htmlContent = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QX → Loon Plugin 转换器</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family: -apple-system, system-ui}
+body{padding:16px;background:#f5f5f7}
+h3{margin:10px 0;color:#111}
+textarea{width:100%;height:340px;padding:12px;font-size:14px;border:1px solid #ddd;border-radius:10px;background:#fff;margin-bottom:12px;outline:none}
+.btn-group{margin-bottom:12px}
+button{padding:10px 20px;background:#007aff;color:#fff;border:none;border-radius:8px;font-size:15px;margin-right:8px}
+#result{white-space:pre-wrap;padding:12px;border:1px solid #e5e5e7;border-radius:10px;background:#fff;min-height:340px;font-family:Menlo,monospace;font-size:13px;overflow:auto}
+.tip{color:#666;font-size:13px;margin:8px 0}
+</style>
+</head>
+<body>
+<h3>粘贴 Quantumult X 完整脚本</h3>
+<div class="tip">包含注释、[rewrite_local]、[mitm] 全部复制进来</div>
+<textarea id="input" placeholder="把QX脚本粘贴在这里……"></textarea>
+
+<div class="btn-group">
+<button onclick="convert()">一键转换 Loon Plugin</button>
+<button onclick="copyResult()">复制转换结果</button>
+</div>
+
+<h3>转换结果（直接保存为 xxx.plugin）</h3>
+<div id="result"></div>
+
+<script>
+function convert() {
+    const raw = document.getElementById('input').value;
+    let mitmHost = '';
+    const scriptLines = [];
+
+    const mitmMatch = raw.match(/\\[mitm\\][\\s\\S]*?hostname\\s*=\\s*([^\\n\\r#]+)/i);
+    if (mitmMatch) {
+        mitmHost = mitmMatch[1].trim();
+    }
+
+    const lines = raw.split(/\\r?\\n/);
+    for (const line of lines) {
+        const trimLine = line.trim();
+        if (!trimLine || trimLine.startsWith('#')) continue;
+
+        const reqReg = /^(.+?)\\s+url\\s+script-request-header\\s+(\\S+)/i;
+        const reqRes = trimLine.match(reqReg);
+        if (reqRes) {
+            scriptLines.push(\`http-request \${reqRes[1]} script-path=\${reqRes[2]}\`);
+            continue;
+        }
+
+        const resReg = /^(.+?)\\s+url\\s+script-response-body\\s+(\\S+)/i;
+        const resRes = trimLine.match(reqReg);
+        if (resRes) {
+            scriptLines.push(\`http-response \${resRes[1]} script-path=\${resRes[2]}, requires-body=true\`);
+        }
+    }
+
+    const output = \`#!name=AutoConvertPlugin
+#!desc=QX脚本自动转换生成
+#!author=QX2Loon-Tool
+#!version=1.0
+#!system=ios
+#!category=VIP解锁
+
+[MITM]
+hostname = \${mitmHost || 'fill.domain.com'}
+
+[Script]
+\${scriptLines.join('\\n')}
+\`;
+
+    document.getElementById('result').innerText = output;
+}
+
+async function copyResult() {
+    const text = document.getElementById('result').innerText;
+    try {
+        await navigator.clipboard.writeText(text);
+        alert('复制成功，去备忘录保存为 .plugin');
+    } catch (e) {
+        alert('复制失败，请手动全选复制结果');
+    }
+}
+</script>
+</body>
+</html>`;
+
+    // 返回HTML页面给浏览器
+    $done({
+        status: 200,
+        headers: {
+            "Content-Type": "text/html; charset=utf-8"
+        },
+        body: htmlContent
+    });
+})();
