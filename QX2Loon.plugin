@@ -1,0 +1,27 @@
+#!name=QX2Loon Hub：QX转Loon插件转换器
+#!desc=自用QX Rewrite一键转换成标准Loon Plugin
+#!author=Self
+#!tag=工具
+#!openurl=https://qx2loon.hub/
+#!icon=https://raw.githubusercontent.com/Script-Hub-Org/Script-Hub/main/assets/icon-dark.png
+#!select=插件代理策略，默认代理，自选策略
+#!select=通知开关，开启通知，关闭通知
+#!input=Parser_http_timeout
+
+[General]
+force-http-engine-hosts = qx2loon.hub,*.qx2loon.hub
+
+[Rule]
+DOMAIN,raw.githubusercontent.com,PROXY
+
+[Script]
+http-request ^https?:\/\/qx2loon\.hub\/($|index)
+script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/qx2loon-front.js,
+timeout=300,tag=QX2Loon：前端页面
+
+http-request ^https?:\/\/qx2loon\.hub\/convert\/
+script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/qx2loon-parser.js,
+timeout=300,tag=QX2Loon：QX转Loon解析器
+
+[MITM]
+hostname = qx2loon.hub,*.qx2loon.hub
