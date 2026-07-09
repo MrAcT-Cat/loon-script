@@ -1,46 +1,58 @@
 async function main() {
-  const html = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<title>QX2Loon Hub</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system}
-body{padding:16px;background:#f5f5f7}
-textarea{width:100%;height:320px;padding:12px;border-radius:10px;border:1px solid #ddd;margin:10px 0}
-button{padding:10px 20px;background:#007aff;color:#fff;border:none;border-radius:8px}
-#result{margin-top:10px;padding:12px;background:#fff;border-radius:10px;white-space:pre-wrap;min-height:300px;font-family:Menlo}
-</style>
-</head>
-<body>
-<h2>QX Rewrite → Loon Plugin</h2>
-<textarea id="input" placeholder="粘贴完整QX脚本"></textarea>
-<button onclick="doConvert()">开始转换</button>
-<button onclick="copyRes()">复制结果</button>
-<div id="result"></div>
-<script>
-async function doConvert(){
-  const raw = document.getElementById('input').value;
-  const res = await fetch('/convert/',{
-    method:'POST',
-    body:raw
-  });
-  const text = await res.text();
-  document.getElementById('result').innerText = text;
-}
-async function copyRes(){
-  const txt = document.getElementById('result').innerText;
-  navigator.clipboard.writeText(txt);
-  alert('已复制');
-}
-</script>
-</body>
-</html>`;
+  const rawBody = $request.body;
+  let mitmHost = '';
+  const scriptLines = [];
+
+  // 提取MITM域名
+  const mitmMatch = rawBody.match(/\[mitm\][\s\S]*?hostname\s*=\s*([^\n\r#]+)/i);
+  if(mitmMatch) mitmHost = mitmMatch[1].trim();
+
+  // 逐行解析Rewrite规则
+  const lines = rawBody.split(/\r?\n/);
+  for(const line of lines){
+    const trim = line.trim();
+    if(!trim || trim.startsWith('#')) continue;
+
+    // script-request-header
+    const reqReg = /^(.+?)\s+url\s+script-request-header\s+(\S+)/i;
+    const reqM = trim.match(reqReg);
+    if(reqM){
+      scriptLines.push(`http-request ${reqM[1]} script-path=${reqM[2]}`);
+      continue;
+    }
+
+    // script-response-body
+    const resReg = /^(.+?)\s+url\s+script-response-body\s+(\S+)/i;
+    const resM = trim.match(resReg);
+    if(resM){
+      scriptLines.push(`http-response ${resM[1]} script-path=${resM[2]}, requires-body=true`);
+    }
+  }
+
+  // 拼装标准Loon Plugin
+  const plugin = `#!name=转换生成插件
+#!desc=由QX2Loon Hub自动转换
+#!version=1.0
+#!system=ios
+#!category=重写
+
+[MITM]
+hostname = ${mitmHost || 'example.com'}
+
+[Script]
+${scriptLines.join('\n')}
+`;
+
+  // 标准返回结构，必须包 response
   $done({
-    status:200,
-    headers:{"Content-Type":"text/html;charset=utf-8"},
-    body:html
+    response: {
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8",
+        "Access-Control-Allow-Origin": "*"
+      },
+      body: plugin
+    }
   });
 }
 main();
