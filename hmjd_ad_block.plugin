@@ -1,25 +1,31 @@
-#!name=HMJD 去悬浮广告拦截
-#!desc=拦截gp2hmr/cnr2ew/wu7y6z广告域名，隐藏页面右侧悬浮浮窗，阻止点击跳转
-#!author=Custom
-#!version=1.0
-#!homepage=https://github.com/YourName/YourRepo
-#!system_version=14.0+
+#!name=HMJD 悬浮广告彻底拦截
+#!desc=拦截8005端口广告域名，CSS屏蔽悬浮窗，JS定时清理动态广告浮层，阻止点击跳转
+#!author=MrAcT-Cat
+#!version=1.2
+#!homepage=https://github.com/MrAcT-Cat/loon-script
 #!loon_version=3.0+
 
 [MITM]
-hostname = hmjd9.com,hmjd8.com 
+hostname = shturl.cc,shturl.cc
+requires-body = true
 
 [Rewrite]
-# 方案A：直接在HTML最顶部插入全局屏蔽CSS，不用URI编码，Loon原生标准写法
-^https://.*hmjd\.com/.* response-body-replace-regex ^(<head>) $1<style>.fixed,[style*=position:fixed],[style*=z-index:9999]{display:none !important;width:0 !important;height:0 !important;overflow:hidden !important;pointer-events:none !important;}</style>
+# 插入全局屏蔽CSS，同时匹配 hmjd8 / hmjd9
+^https://.*hmjd8\.com/.* response-body-replace-regex ^(<head>) $1<style>.fixed,[style*=position:fixed],[style*=z-index:9999]{display:none !important;width:0 !important;height:0 !important;overflow:hidden !important;pointer-events:none !important;}</style>
+^https://.*hmjd9\.com/.* response-body-replace-regex ^(<head>) $1<style>.fixed,[style*=position:fixed],[style*=z-index:9999]{display:none !important;width:0 !important;height:0 !important;overflow:hidden !important;pointer-events:none !important;}</style>
 
-# 精准拦截8005端口广告JS请求
+# 拦截所有8005端口广告JS
 ^https://.*\.gp2hmr\.com:8005/.* url reject-200
 ^https://.*\.cnr2ew\.com:8005/.* url reject-200
 ^https://.*\.wu7y6z\.com:8005/.* url reject-200
 
+[Script]
+# 接入你的 GitHub 远程 JS
+http-response ^https://.*hmjd8\.com/.* script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/hmjd_clean.js, requires-body=true, timeout=15, tag=HMJD清理悬浮广告
+http-response ^https://.*hmjd9\.com/.* script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/hmjd_clean.js, requires-body=true, timeout=15, tag=HMJD清理悬浮广告
+
 [Rule]
-# 广告域名全局阻断，放在规则靠前位置
+# 全局阻断广告域名，优先级最高
 DOMAIN-SUFFIX,gp2hmr.com,REJECT
 DOMAIN-SUFFIX,cnr2ew.com,REJECT
 DOMAIN-SUFFIX,wu7y6z.com,REJECT
