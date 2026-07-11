@@ -8,4 +8,4 @@ https?:\/\/.*yangjibao.com\/unify_ad response-body-json-jq '.data=null'
 
 
 [MITM]
-hostname = yangjibao.com
+hostname = *yangjibao.com
