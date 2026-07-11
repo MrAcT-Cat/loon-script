@@ -6,7 +6,7 @@
 #!loon_version=3.0+
 
 [MITM]
-hostname = shturl.cc,shturl.cc
+hostname = shturl.cc,shturl.CC,gglm.dog
 requires-body = true
 
 [Rewrite]
@@ -23,8 +23,15 @@ requires-body = true
 # 接入你的 GitHub 远程 JS
 http-response ^https://.*hmjd8\.com/.* script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/hmjd_clean.js, requires-body=true, timeout=15, tag=HMJD清理悬浮广告
 http-response ^https://.*hmjd9\.com/.* script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/hmjd_clean.js, requires-body=true, timeout=15, tag=HMJD清理悬浮广告
+# 下面新增狗狗联盟拦截
+[http-response]
+pattern = ^https?://.*gglm\.dog/d/
+script-path = https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/gglm_block.js
+requires-body = true
 
 [Rule]
+# 全局阻断广告域名，优先级最高
+DOMAIN-SUFFIX,gp2hmr.com,REJECT
 # 全局阻断广告域名，优先级最高
 DOMAIN-SUFFIX,gp2hmr.com,REJECT
 DOMAIN-SUFFIX,cnr2ew.com,REJECT
