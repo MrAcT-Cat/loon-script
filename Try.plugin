@@ -1,11 +1,14 @@
-#!name= 养基宝
-#!desc=local
+#!name=养基宝
+#!desc=解锁VIP、屏蔽广告
 #!icon=https://github.com/Toperlock/Quantumult/raw/main/icon/Naruto/Naruto-1258.png
+#!enable=true
 
 [Rewrite]
-https?:\/\/.*yangjibao\.com\/.*\/account|vip_info response-body-json-jq '.data.vip_label=true|.data.vip_expiry_date="2099-12-31"|.data.is_pay=true'
-https?:\/\/.*yangjibao.com\/unify_ad response-body-json-jq '.data=null'
+# 解锁VIP信息
+^https?:\/\/.*yangjibao\.com\/.*\/account|vip_info response-body-json-jq '.data |= {vip_label:true, vip_expiry_date:"2099-12-31", is_pay:true}'
 
+# 广告接口清空数据
+^https?:\/\/.*yangjibao\.com\/unify_ad response-body-json-jq '.data = null'
 
 [MITM]
-hostname = *yangjibao.com
+hostname = *.yangjibao.com
