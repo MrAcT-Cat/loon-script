@@ -1,0 +1,19 @@
+#!name=养基宝
+#!desc=解锁VIP会员、屏蔽内置广告
+#!icon=https://github.com/Toperlock/Quantumult/raw/main/icon/Naruto/Naruto-1258.png
+#!tag=去广告,VIP解锁
+#!enable=true
+#!loon_version=3.2.1(730)
+
+[Rewrite]
+# 解锁账号VIP信息，jq合并字段不覆盖原有data内容
+^https?:\/\/.*yangjibao\.com\/.*\/account|vip_info response-body-json-jq '.data |= {vip_label:true, vip_expiry_date:"2099-12-31", is_pay:true}'
+
+# 广告接口清空返回数据，关闭开屏/弹窗广告
+^https?:\/\/.*yangjibao\.com\/unify_ad response-body-json-jq '.data = null'
+
+# 图片广告域名拦截，替换1像素空白图
+^https?://wstgcss\.bdpsjp\.com reject-img
+
+[MITM]
+hostname = *.yangjibao.com,wstgcss.bdpsjp.com
