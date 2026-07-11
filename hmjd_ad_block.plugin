@@ -10,8 +10,8 @@
 hostname = hmjd.com
 
 [Rewrite]
-# 注入CSS隐藏所有fixed悬浮元素，禁止点击触发跳转
-^https://.*hmjd\.com/.* url response-body \@import url("data:text/css,#{encodeURIComponent('.fixed,[style*=position:fixed]{display:none !important;width:0 !important;height:0 !important;overflow:hidden !important;pointer-events:none !important;}')}");
+# 方案A：直接在HTML最顶部插入全局屏蔽CSS，不用URI编码，Loon原生标准写法
+^https://.*hmjd\.com/.* response-body-replace-regex ^(<head>) $1<style>.fixed,[style*=position:fixed],[style*=z-index:9999]{display:none !important;width:0 !important;height:0 !important;overflow:hidden !important;pointer-events:none !important;}</style>
 
 # 精准拦截8005端口广告JS请求
 ^https://.*\.gp2hmr\.com:8005/.* url reject-200
