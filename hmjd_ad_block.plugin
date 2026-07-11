@@ -1,0 +1,26 @@
+#!name=HMJD 去悬浮广告拦截
+#!desc=拦截gp2hmr/cnr2ew/wu7y6z广告域名，隐藏页面右侧悬浮浮窗，阻止点击跳转
+#!author=Custom
+#!version=1.0
+#!homepage=https://github.com/YourName/YourRepo
+#!system_version=14.0+
+#!loon_version=3.0+
+
+[MITM]
+hostname = hmjd.com
+
+[Rewrite]
+# 注入CSS隐藏所有fixed悬浮元素，禁止点击触发跳转
+^https://.*hmjd\.com/.* url response-body \@import url("data:text/css,#{encodeURIComponent('.fixed,[style*=position:fixed]{display:none !important;width:0 !important;height:0 !important;overflow:hidden !important;pointer-events:none !important;}')}");
+
+# 精准拦截8005端口广告JS请求
+^https://.*\.gp2hmr\.com:8005/.* url reject-200
+^https://.*\.cnr2ew\.com:8005/.* url reject-200
+^https://.*\.wu7y6z\.com:8005/.* url reject-200
+
+[Rule]
+# 广告域名全局阻断，放在规则靠前位置
+DOMAIN-SUFFIX,gp2hmr.com,REJECT
+DOMAIN-SUFFIX,cnr2ew.com,REJECT
+DOMAIN-SUFFIX,wu7y6z.com,REJECT
+DOMAIN-SUFFIX,yandex.ru,REJECT
