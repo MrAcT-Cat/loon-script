@@ -20,11 +20,13 @@ requires-body = true
 ^https://.*\.wu7y6z\.com:8005/.* url reject-200
 
 [Script]
-# 接入你的 GitHub 远程 JS
+# HMJD 原有清理脚本
 http-response ^https://.*hmjd8\.com/.* script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/hmjd_clean.js,requires-body=true,timeout=15,tag=HMJD清理悬浮广告
 http-response ^https://.*hmjd9\.com/.* script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/hmjd_clean.js,requires-body=true,timeout=15,tag=HMJD清理悬浮广告
-# 下面新增狗狗联盟拦截
+
+# 狗狗联盟 gglm.dog 接口拦截
 http-response ^https?://.*gglm\.dog/d/.* script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/gglm_block.js,requires-body=true,timeout=15,tag=gglm清理悬浮广告
+
 [Rule]
 # 全局阻断广告域名，优先级最高
 DOMAIN-SUFFIX,gp2hmr.com,REJECT
