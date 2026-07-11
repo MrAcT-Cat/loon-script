@@ -12,7 +12,7 @@
 # 广告接口清空返回数据，关闭开屏/弹窗广告
 ^https?:\/\/.*yangjibao\.com\/unify_ad response-body-json-jq '.data = null'
 
-# 追加之前图片广告域名拦截（reject-img原生复写，替换1像素透明图）
+# 图片广告域名拦截，替换1像素空白图
 ^https?://wstgcss\.bdpsjp\.com reject-img
 
 [MITM]
