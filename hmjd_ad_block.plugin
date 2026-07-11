@@ -7,7 +7,7 @@
 #!loon_version=3.0+
 
 [MITM]
-hostname = hmjd.com
+hostname = hmjd9.com,hmjd8.com 
 
 [Rewrite]
 # 方案A：直接在HTML最顶部插入全局屏蔽CSS，不用URI编码，Loon原生标准写法
