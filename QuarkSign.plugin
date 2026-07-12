@@ -1,0 +1,20 @@
+#!name = 夸克扫描王签到
+#!desc = 自动签到夸克扫描王，需先手动签到一次抓取参数。支持定时开关。
+#!date = 2026-07-12
+#!author = Custom
+#!icon = https://is1-ssl.mzstatic.com/image/thumb/Purple116/v4/9f/0d/93/9f0d9334-3c12-4e32-a4e0-32cd1177e6c0/AppIcon-0-1x_U007emarketing-0-7-0-85-220-0-6-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0.png/512x512bb.jpg
+#!loon_version = 3.2.4(787)
+
+[Argument]
+arg1 = switch,true,tag=开启签到
+arg2 = input,"0 8 * * *",tag=签到定时（cron表达式）
+
+[Rule]
+DOMAIN, scan-order.quark.cn, PROXY
+
+[Script]
+http-request ^https:\/\/scan-order\.quark\.cn\/api\/sd6hJds8SIgn\/pDChohbxo82nCoIn script-path=https://raw.githubusercontent.com/yourusername/yourrepo/main/QuarkSign.js, timeout=30, enable={arg1}, tag=夸克抓包（需手动签到一次）
+cron {arg2} script-path=https://raw.githubusercontent.com/yourusername/yourrepo/main/QuarkSign.js, timeout=30, enable={arg1}, tag=夸克定时签到
+
+[MITM]
+hostname = scan-order.quark.cn
