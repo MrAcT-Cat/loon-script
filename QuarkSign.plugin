@@ -13,8 +13,8 @@ arg2 = input,"0 8 * * *",tag=签到定时（cron表达式）
 DOMAIN, scan-order.quark.cn, PROXY
 
 [Script]
-http-request ^https:\/\/scan-order\.quark\.cn\/api\/sd6hJds8SIgn\/pDChohbxo82nCoIn script-path=https://raw.githubusercontent.com/yourusername/yourrepo/main/QuarkSign.js, timeout=30, enable={arg1}, tag=夸克抓包（需手动签到一次）
-cron {arg2} script-path=https://raw.githubusercontent.com/yourusername/yourrepo/main/QuarkSign.js, timeout=30, enable={arg1}, tag=夸克定时签到
+http-request ^https:\/\/scan-order\.quark\.cn\/api\/sd6hJds8SIgn\/pDChohbxo82nCoIn script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/QuarkSign.js, timeout=30, enable={arg1}, tag=夸克抓包（需手动签到一次）
+cron {arg2} script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/QuarkSign.js, timeout=30, enable={arg1}, tag=夸克定时签到
 
 [MITM]
 hostname = scan-order.quark.cn
