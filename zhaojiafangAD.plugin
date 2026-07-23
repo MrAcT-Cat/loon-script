@@ -1,6 +1,8 @@
-#!desc=屏蔽找家房开屏广告 防闪退纯净版
-#!author=Custom
-#!date=2026-06-30
+#!name=找家纺
+#!desc=去除启动开屏广告
+#!author=@mract
+#!homepage=zhaojiafang.com
+#!date=2026-06-26 16:45:00
 
 [Rewrite]
 # 广告图片替换空白1px图
