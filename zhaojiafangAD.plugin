@@ -6,8 +6,10 @@
 #!type=normal
 
 [rewrite]
-# HTTP广告配置接口 返回空JSON
+# 广告配置接口1
 ^http://api-pl-mobile\.zhaojiafang\.com/api/adv/adv_list reject-dict
+# 新增广告配置接口2（抓包发现的appconfig）
+^http://api\.zhaojiafang\.com/v1/fragment/appconfig reject-dict
 # HTTPS广告图片素材 返回空白1px图片
 ^https://qiniu\.zhaojiafang\.com/data/upload/shop/adv reject-img
 
