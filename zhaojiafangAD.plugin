@@ -7,4 +7,4 @@
 ^https?://qiniu\.zhaojiafang\.com/data/upload/shop/adv/.* reject-img
 
 [MITM]
-.zhaojiafang.com, qiniu.zhaojiafang.com
+hostname = .zhaojiafang.com, qiniu.zhaojiafang.com
