@@ -1,17 +1,14 @@
-#!name=赵家坊-启动广告屏蔽
-#!desc=拦截开屏广告配置接口与广告素材，消除APP启动弹窗广告；rewrite优先执行，不受DOMAIN分流规则干扰
-#!author=Custom
-#!tag=去广告
-#!loon_version=3.2.1(372)
-#!type=normal
+#!name=赵家坊广告屏蔽
+#!desc=屏蔽开屏/弹窗广告，远程JS篡改广告列表
+#!author=MrAcT-Cat
+#!loon-version=3.2.0
 
 [rewrite]
-# 广告配置接口1
-^http://api-pl-mobile\.zhaojiafang\.com/api/adv/adv_list reject-dict
-# 新增广告配置接口2（抓包发现的appconfig）
-^http://api\.zhaojiafang\.com/v1/fragment/appconfig reject-dict
-# HTTPS广告图片素材 返回空白1px图片
-^https://qiniu\.zhaojiafang\.com/data/upload/shop/adv reject-img
+# 广告接口：远程脚本清空广告数组
+^https?://api-pl-mobile\.zhaojiafang\.com/api/adv/adv_list script-response-body https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/clearAd.js
+
+# 拦截广告图片（核心兜底，就算拿到图片地址也显示空白）
+^https?://qiniu\.zhaojiafang\.com/.*\.(jpg|jpeg|png|webp) reject-img
 
 [mitm]
-hostname = qiniu.zhaojiafang.com
+hostname = api-pl-mobile.zhaojiafang.com,qiniu.zhaojiafang.com
