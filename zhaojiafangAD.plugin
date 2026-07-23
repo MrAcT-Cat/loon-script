@@ -1,14 +1,14 @@
-#!name=赵家坊-启动广告屏蔽
+#!name=找家纺去广告
 #!desc=屏蔽开屏/弹窗广告，远程JS篡改广告列表
 #!author=MrAcT-Cat
 #!loon-version=3.2.0
 
 [rewrite]
-# API广告接口，远程脚本清空广告数组（标准http-response写法）
-http-response ^https?://api-pl-mobile\.zhaojiafang\.com/api/adv/adv_list script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/clearAd.js,requires-body=true
-
-# 广告图片拦截兜底
+# 广告图片兜底拦截
 ^https?://qiniu\.zhaojiafang\.com/.*\.(jpg|jpeg|png|webp) reject-img
+
+[Script]
+http-response ^https?://api-pl-mobile\.zhaojiafang\.com/api/adv/adv_list script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/clearAd.js,requires-body=true,timeout=10,tag=找家纺广告清除
 
 [mitm]
 hostname = api-pl-mobile.zhaojiafang.com,qiniu.zhaojiafang.com
