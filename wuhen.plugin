@@ -1,9 +1,0 @@
-[Rewrite]
-
-
-[Script]
-http-response ^https://meitu\.minecaller\.com/api/users script-path=https://raw.githubusercontent.com/liul0ng/quanx/refs/heads/main/wuhen.js, requires-body=true, timeout=10, tag=无痕改字
-
-[MITM]
-
-hostname = meitu.minecaller.com
