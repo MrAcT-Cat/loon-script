@@ -4,7 +4,7 @@
 
 [Rewrite]
 # 广告图片替换空白1px图
-^https://qiniu\.zhaojiafang\.com/data/upload/shop/adv/ reject-img
+^https?://qiniu\.zhaojiafang\.com/data/upload/shop/adv/.* reject-img
 
 [MITM]
 .zhaojiafang.com, qiniu.zhaojiafang.com
