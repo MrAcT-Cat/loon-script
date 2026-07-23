@@ -1,15 +1,15 @@
-#!name=找家纺启动广告屏蔽
-#!desc=拦截开屏广告配置接口与广告素材，消除APP启动弹窗广告；明文HTTP接口采用路由规则拦截，无需依赖MITM劫持
+#!name=赵家坊-启动广告屏蔽
+#!desc=拦截开屏广告配置接口与广告素材，消除APP启动弹窗广告；明文HTTP接口无需MITM，HTTPS素材依靠MITM解密精准拦截
 #!author=Custom
 #!tag=去广告
 #!loon_version=3.2.1(372)
 #!type=normal
 
-[rule]
-# 广告配置核心接口（http明文流量同样生效，源头阻止广告下发）
-URL-REGEX,^http://api-pl-mobile\.zhaojiafang\.com/api/adv/adv_list,REJECT
-# 广告图片素材
-URL-REGEX,^https://qiniu\.zhaojiafang\.com/data/upload/shop/adv,REJECT
+[rewrite]
+# HTTP广告接口，明文无需MITM，返回空JSON
+^http://api-pl-mobile\.zhaojiafang\.com/api/adv/adv_list reject-dict
+# HTTPS广告图片素材，依靠MITM解密识别路径，返回空白1px图片
+^https://qiniu\.zhaojiafang\.com/data/upload/shop/adv reject-img
 
 [mitm]
 hostname = qiniu.zhaojiafang.com
