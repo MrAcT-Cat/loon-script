@@ -3,10 +3,8 @@
 #!date=2026-06-30
 
 [Rewrite]
-# 广告接口直接断开，不篡改响应
-^https?://api-pl-mobile\.zhaojiafang\.com/api/adv/adv_list reject
 # 广告图片替换空白1px图
 ^https://qiniu\.zhaojiafang\.com/data/upload/shop/adv/ reject-img
 
 [MITM]
-hostname = api-pl-mobile.zhaojiafang.com, qiniu.zhaojiafang.com
+.zhaojiafang.com, qiniu.zhaojiafang.com
