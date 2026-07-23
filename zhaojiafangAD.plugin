@@ -1,12 +1,13 @@
-#!name=找家纺
-#!desc=去除启动开屏广告
-#!author=@mract
-#!homepage=zhaojiafang.com
-#!date=2026-06-26 16:45:00
+#!name=找家纺开屏广告屏蔽
+#!desc=屏蔽启动广告配置接口与广告素材
+#!author=Custom
+#!date=2026-07-23
 
 [Rewrite]
-# 广告图片替换空白1px图
-^https?://qiniu\.zhaojiafang\.com/data/upload/shop/adv/.* reject-img
+# 广告核心接口 adv_list
+^http://api-pl-mobile\.zhaojiafang\.com/api/adv/adv_list reject
+# 广告图片资源
+^https://qiniu\.zhaojiafang\.com/data/upload/shop/adv/ reject
 
 [MITM]
-hostname = .zhaojiafang.com, qiniu.zhaojiafang.com
+hostname = api-pl-mobile.zhaojiafang.com,qiniu.zhaojiafang.com
