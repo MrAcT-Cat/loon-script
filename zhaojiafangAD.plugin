@@ -1,13 +1,13 @@
-#!name=赵家坊广告屏蔽
+#!name=赵家坊-启动广告屏蔽
 #!desc=屏蔽开屏/弹窗广告，远程JS篡改广告列表
 #!author=MrAcT-Cat
 #!loon-version=3.2.0
 
 [rewrite]
-# 广告接口：远程脚本清空广告数组
-^https?://api-pl-mobile\.zhaojiafang\.com/api/adv/adv_list script-response-body https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/clearAd.js
+# API广告接口，远程脚本清空广告数组（标准http-response写法）
+http-response ^https?://api-pl-mobile\.zhaojiafang\.com/api/adv/adv_list script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/clearAd.js,requires-body=true
 
-# 拦截广告图片（核心兜底，就算拿到图片地址也显示空白）
+# 广告图片拦截兜底
 ^https?://qiniu\.zhaojiafang\.com/.*\.(jpg|jpeg|png|webp) reject-img
 
 [mitm]
