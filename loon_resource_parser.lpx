@@ -18,9 +18,8 @@ sort = input,"",tag=节点排序,desc=按关键词先后顺序排序，使用英
 emoji = switch,false,tag=去除 Emoji,desc=去除节点名称中的 Emoji 和旗帜
 userAgent = input,"Shadowrocket/3308 CFNetwork/3886.100.1 Darwin/27.0.0 iPhone18,1",tag=User-Agent,desc=仅在自定义 UA 开关开启时生效。
 noCache = switch,false,tag=禁用缓存,desc=如果自定义UA获取不到节点可以开启试试。
-exclude = input,"",tag=排除正则(黑名单),desc=使用正则表达式匹配并剔除不需要的节点，例如 (过期|官网|剩余)
-include = input,"",tag=包含正则(白名单),desc=仅保留匹配该正则表达式的节点，留空则不限制
 ua = switch,false,tag=自定义 UA,desc=开启后使用自定义 User-Agent 拉取订阅。
+filter = input,"",tag=节点过滤,desc=过滤包含关键词的节点，多个关键词用英文逗号分隔，例如 流量,日期,（）   ; ← 新添加
 
 [Script]
-generic script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/loon_resource_parser.js,tag=资源解析器,timeout=10,argument=[{pre},{suf},{emoji},{rename},{sort},{ua},{userAgent},{noCache}]
+generic script-path=https://raw.githubusercontent.com/MrAcT-Cat/loon-script/main/loon_resource_parser.js,tag=资源解析器,timeout=10,argument={"pre":"{pre}","suf":"{suf}","emoji":"{emoji}","rename":"{rename}","sort":"{sort}","ua":"{ua}","userAgent":"{userAgent}","noCache":"{noCache}","filter":"{filter}"}
