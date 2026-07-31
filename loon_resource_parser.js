@@ -19,8 +19,13 @@
  * - 去除节点名中的 Emoji
  * - 普通文本替换
  * - 按关键词自定义节点排序
- * - 正则表达式过滤 / 保留节点
  * - 开启 `ua` 时使用自定义 User-Agent 重新请求原始订阅
+ * - [NEW] 按关键词过滤节点（名称包含任一关键词则丢弃）
+ *
+ * 参数来源：
+ * - 解析器插件 `[Argument]`
+ * - 每次执行只使用本次插件设置传入的参数
+ * - 如果 Loon 未调用解析器脚本，则脚本内任何参数和逻辑都不会执行
  */
 
 var type = $resourceType;
@@ -32,8 +37,11 @@ var sort = "";
 var ua = false;
 var userAgent = "";
 var noCache = false;
-var excludeRegex = "";
-var includeRegex = "";
+var filter = "";                     // [NEW]
+
+// [NEW] 过滤相关全局变量
+var filterKeywords = [];
+var hasFilter = false;
 
 function str(v) {
   return v == null ? "" : String(v);
@@ -166,22 +174,25 @@ function sortItemsByName(items) {
   return items;
 }
 
-// 检查节点是否应该被过滤
-function shouldFilterNode(name) {
-  var n = str(name);
-  // 1. 如果设置了排除正则（黑名单），且匹配成功，则过滤掉
-  if (excludeRegex) {
-    try {
-      var regEx = new RegExp(excludeRegex);
-      if (regEx.test(n)) return true;
-    } catch (e) {}
+// [NEW] 解析过滤关键词
+function parseFilter() {
+  filterKeywords = [];
+  hasFilter = false;
+  if (!filter) return;
+  var items = str(filter).split(",");
+  for (var i = 0; i < items.length; i++) {
+    var kw = items[i].trim();
+    if (kw) filterKeywords.push(kw);
   }
-  // 2. 如果设置了包含正则（白名单），且匹配失败，则过滤掉
-  if (includeRegex) {
-    try {
-      var regIn = new RegExp(includeRegex);
-      if (!regIn.test(n)) return true;
-    } catch (e) {}
+  hasFilter = filterKeywords.length > 0;
+}
+
+// [NEW] 判断节点名是否应被排除
+function shouldExclude(name) {
+  if (!hasFilter) return false;
+  var n = str(name);
+  for (var i = 0; i < filterKeywords.length; i++) {
+    if (n.indexOf(filterKeywords[i]) !== -1) return true;
   }
   return false;
 }
@@ -219,20 +230,18 @@ function processLoonStyle(text) {
   var lines = raw.split("\n");
   var output = [];
   var items = [];
-  var filteredCount = 0;
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i].trim();
     if (!line || line.charAt(0) === "#") { output.push(line); continue; }
     var eqPos = line.indexOf("=");
     if (eqPos > 0) {
       var originalName = line.substring(0, eqPos).trim();
-      if (shouldFilterNode(originalName)) {
-        filteredCount++;
-        continue;
-      }
+      var newName = modifyName(originalName);
+      // [NEW] 过滤检查
+      if (shouldExclude(newName)) continue;
       items.push({
         index: items.length,
-        name: modifyName(originalName),
+        name: newName,
         value: line.substring(eqPos + 1).trim()
       });
       continue;
@@ -243,7 +252,7 @@ function processLoonStyle(text) {
   for (var j = 0; j < items.length; j++) {
     output.push(items[j].name + "=" + items[j].value);
   }
-  console.log("[解析器] 已修改节点数: " + items.length + (filteredCount ? ", 已过滤节点数: " + filteredCount : ""));
+  console.log("[解析器] 已修改节点数: " + items.length);
   return output.join("\n");
 }
 
@@ -262,7 +271,6 @@ function processBase64UriList(text) {
   var lines = normalizeText(decoded).split("\n");
   var sortable = [];
   var passthrough = [];
-  var filteredCount = 0;
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i].trim();
     if (!line) continue;
@@ -272,20 +280,16 @@ function processBase64UriList(text) {
       var frag = line.slice(hashPos + 1);
       var oldName = "";
       try { oldName = decodeURIComponent(frag); } catch (e) { oldName = frag; }
-      
-      if (shouldFilterNode(oldName)) {
-        filteredCount++;
-        continue;
-      }
-      sortable.push({ index: sortable.length, name: modifyName(oldName), left: left });
+      var newName = modifyName(oldName);
+      // [NEW] 过滤检查
+      if (shouldExclude(newName)) continue;
+      sortable.push({ index: sortable.length, name: newName, left: left });
     } else {
       var remarkName = extractRemarkName(line);
       if (remarkName) {
-        if (shouldFilterNode(remarkName)) {
-          filteredCount++;
-          continue;
-        }
-        sortable.push({ index: sortable.length, name: modifyName(remarkName), left: line + "#" });
+        var newName2 = modifyName(remarkName);
+        if (shouldExclude(newName2)) continue;
+        sortable.push({ index: sortable.length, name: newName2, left: line + "#" });
       } else {
         passthrough.push({ raw: line });
       }
@@ -300,7 +304,7 @@ function processBase64UriList(text) {
       : merged[k].raw);
   }
   var plain = output.join("\n");
-  console.log("[解析器] 已修改节点数: " + sortable.length + (filteredCount ? ", 已过滤节点数: " + filteredCount : ""));
+  console.log("[解析器] 已修改节点数: " + sortable.length);
   return plain;
 }
 
@@ -466,11 +470,11 @@ function boolOption(key, value) {
 
 function convertClashProxy(node, index) {
   var type = str(node.type).toLowerCase();
-  var rawName = node.name || ("node-" + index);
-  
-  if (shouldFilterNode(rawName)) return null;
-
-  var name = modifyName(rawName);
+  var originalName = node.name || ("node-" + index);
+  var modifiedName = modifyName(originalName);
+  // [NEW] 过滤检查
+  if (shouldExclude(modifiedName)) return null;
+  var name = modifiedName;
   var server = node.server;
   var port = node.port;
   var opts = [];
@@ -548,7 +552,7 @@ function processClashYaml(text) {
     }
   }
   sortItemsByName(items);
-  console.log("[解析器] 已转换 YAML 节点数: " + items.length + (skipped ? ", 跳过/过滤: " + skipped : ""));
+  console.log("[解析器] 已转换 YAML 节点数: " + items.length + (skipped ? ", 跳过: " + skipped : ""));
   return items.map(function(x) { return x.line; }).join("\n");
 }
 
@@ -561,8 +565,7 @@ function processResource(content) {
   if (pre) configParts.push("pre=" + pre);
   if (suf) configParts.push("suf=" + suf);
   if (sort) configParts.push("sort=" + sort);
-  if (excludeRegex) configParts.push("exclude=" + excludeRegex);
-  if (includeRegex) configParts.push("include=" + includeRegex);
+  if (filter) configParts.push("filter=" + filter);   // [NEW]
   console.log("[解析器] 当前配置: " + (configParts.length ? configParts.join(", ") : "无"));
   console.log("[解析器] 订阅内容长度: " + raw.length);
   var trimmed = raw.trim();
@@ -625,11 +628,11 @@ function finish(content) {
     if (arg.ua !== undefined) ua = bool(arg.ua);
     if (arg.userAgent !== undefined) userAgent = str(arg.userAgent);
     if (arg.noCache !== undefined) noCache = bool(arg.noCache);
-    if (arg.exclude !== undefined) excludeRegex = str(arg.exclude);
-    if (arg.include !== undefined) includeRegex = str(arg.include);
+    if (arg.filter !== undefined) filter = str(arg.filter);   // [NEW]
   }
   parseRename();
   parseSort();
+  parseFilter();   // [NEW]
   console.log("[解析器] 已读取插件参数");
   if (ua && type === 1) refetchWithUserAgent();
   else finish(typeof $resource !== "undefined" ? $resource : "");
