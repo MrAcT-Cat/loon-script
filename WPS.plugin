@@ -1,9 +1,10 @@
-#!name = WPS解锁与签到
+#!name = WPS签到
 #!desc = 获取WPS Token并执行自动签到任务，可视化开关面板，支持自定义签到时间和代理策略
 #!date = 2026-09-13
-#!author = MaYIHEI
+#!author = MaYIHEI / Loon新版适配
+#!homepage = https://github.com/MaYIHEI/paperclip
 #!icon = https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png
-#!loon_version = 3.2.4(787)
+#!loon_version = 3.5.1(983)
 
 [Argument]
 arg1 = switch,true,tag=WPS签到任务
@@ -15,9 +16,9 @@ arg4 = policy,PROXY,tag=WPS代理
 DOMAIN,personal-act.wps.cn,PROXY
 
 [Script]
-cron {arg3} script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.js, timeout=600,enable={arg1},tag=WPS签到,img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png,argument={arg4}
+request if ${url} ~= /^https:\/\/personal-act\.wps\.cn\/activity-rubik\/activity\/page_info/i then script("https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.cookie.js", {${arg4}}) with enable=${arg2}, tag="WPS Cookie", timeout=300, img_url="https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png"
 
-http-request ^https:\/\/personal-act\.wps\.cn\/activity-rubik\/activity\/page_info script-path=https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.cookie.js, timeout=300,enable={arg2},tag=WPS Cookie,img-url=https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png,argument={arg4}
+cron ${arg3} then script("https://raw.githubusercontent.com/MaYIHEI/paperclip/refs/heads/main/app/wps/wps.js", {${arg4}}) with enable=${arg1}, tag="WPS签到", timeout=600, img_url="https://raw.githubusercontent.com/MaYIHEI/pin/refs/heads/main/app/wps.png"
 
 [MITM]
 hostname = personal-act.wps.cn
